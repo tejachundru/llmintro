@@ -121,7 +121,7 @@ export default function Session4RAG() {
     <section id="s4" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="04" tag="Session 4 · 1.5 hrs" title="Giving LLMs a Memory" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="04" tag="Topic 4" title="The Open-Book Exam" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Ask an LLM &ldquo;What&apos;s our refund policy?&rdquo; and it will <strong style={{ color: 'var(--text)' }}>guess</strong> — convincingly, but wrong. It was trained on the internet, not your company&apos;s documents.
         </p>

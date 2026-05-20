@@ -358,7 +358,7 @@ export default function Session1Tokenizer() {
     <section id="s1" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="01" tag="Session 1 · 1.5 hrs" title="What is an LLM?" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="01" tag="Topic 1" title="What is an LLM?" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Let&apos;s start with a question: <strong style={{ color: 'var(--text)' }}>How does ChatGPT know what to say?</strong>
         </p>

@@ -192,7 +192,7 @@ export default function Session5Prompting() {
     <section id="s5" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="05" tag="Session 5 · 1.5 hrs" title="The Art of Prompting" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="05" tag="Topic 5" title="The Art of the Ask" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Here&apos;s a secret: <strong style={{ color: 'var(--text)' }}>the same LLM can produce garbage or gold</strong> — it all depends on how you ask.
         </p>

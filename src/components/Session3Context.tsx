@@ -340,7 +340,7 @@ export default function Session3Context() {
     <section id="s3" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="03" tag="Session 3 · 1.5 hrs" title="The Context Window" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="03" tag="Topic 3" title="The Working Desk" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Have you ever chatted with an LLM, and after a while it <strong style={{ color: 'var(--text)' }}>forgot what you said earlier?</strong>
         </p>

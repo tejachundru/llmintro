@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Children, useEffect, useRef, useState } from 'react';
 
 /* ─── Basic Types ─── */
 
@@ -114,16 +114,23 @@ export function StepReveal({ steps, accent, interval = 800 }: { steps: string[];
 /* ─── Before / After Comparison ─── */
 
 export function BeforeAfter({ before, after, accent }: { before: string; after: string; accent: string }) {
+  const { ref, visible } = useReveal();
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+    <div ref={ref} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
       <div style={{
         background: 'rgba(244,67,54,.05)', border: '1px solid rgba(244,67,54,.3)', borderRadius: 12, padding: '1rem',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateX(0)' : 'translateX(-16px)',
+        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: '#f44336', marginBottom: 'var(--space-sm)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>Before</div>
         <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-normal)' }}>{before}</div>
       </div>
       <div style={{
         background: accent + '0a', border: `1px solid ${accent}44`, borderRadius: 12, padding: '1rem',
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'translateX(0)' : 'translateX(16px)',
+        transition: 'all 0.5s 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: accent, marginBottom: 'var(--space-sm)', textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)' }}>After</div>
         <div style={{ fontSize: 'var(--font-caption)', color: 'var(--text)', lineHeight: 'var(--lh-normal)', fontWeight: 500 }}>{after}</div>
@@ -191,9 +198,31 @@ export function useReveal() {
 
 export function RevealSection({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   const { ref, visible } = useReveal();
+  const childrenArray = Children.toArray(children);
   return (
-    <div ref={ref} style={{ opacity: visible ? 1 : 0, transform: visible ? 'none' : 'translateY(20px)', transition: 'all .6s ease', ...style }}>
-      {children}
+    <div ref={ref} style={style}>
+      {childrenArray.length > 1 ? (
+        childrenArray.map((child, i) => (
+          <div
+            key={i}
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? 'translateY(0)' : 'translateY(20px)',
+              transition: `all 0.5s ${i * 0.07}s cubic-bezier(0.4, 0, 0.2, 1)`,
+            }}
+          >
+            {child}
+          </div>
+        ))
+      ) : (
+        <div style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -201,11 +230,15 @@ export function RevealSection({ children, style }: { children: React.ReactNode; 
 /* ─── ConceptBlock ─── */
 
 export function ConceptBlock({ title, accent, children }: { title: string; accent: string; children: React.ReactNode }) {
+  const { ref, visible } = useReveal();
   return (
-    <div style={{
+    <div ref={ref} style={{
       borderLeft: `3px solid ${accent}`, borderRadius: '0 12px 12px 0',
       padding: '1rem 1.25rem', marginBottom: '1rem',
       background: accent + '0a',
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateX(0)' : 'translateX(-12px)',
+      transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
     }}>
       <div style={{ fontSize: 'var(--font-body-lg)', fontWeight: 500, color: accent, marginBottom: 'var(--space-sm)', fontFamily: 'var(--font-serif)' }}>{title}</div>
       <div style={{ fontSize: 'var(--font-body-lg)', color: 'var(--muted)', lineHeight: 'var(--lh-relaxed)' }}>{children}</div>
@@ -216,8 +249,14 @@ export function ConceptBlock({ title, accent, children }: { title: string; accen
 /* ─── KeyPoint ─── */
 
 export function KeyPoint({ num, title, accent, children }: { num: number; title: string; accent: string; children: React.ReactNode }) {
+  const { ref, visible } = useReveal();
   return (
-    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
+    <div ref={ref} style={{
+      display: 'flex', gap: '1rem', marginBottom: '1.25rem', alignItems: 'flex-start',
+      opacity: visible ? 1 : 0,
+      transform: visible ? 'translateX(0)' : 'translateX(-12px)',
+      transition: `all 0.4s ${num * 0.06}s cubic-bezier(0.4, 0, 0.2, 1)`,
+    }}>
       <div style={{
         width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: accent + '1e', border: `1px solid ${accent}44`, color: accent, flexShrink: 0,
@@ -286,19 +325,33 @@ export function ComparisonTable({ headers, rows, accent }: { headers: string[]; 
 /* ─── FlowDiagram ─── */
 
 export function FlowDiagram({ steps, accent }: { steps: { label: string; sub: string }[]; accent: string }) {
+  const { ref, visible } = useReveal();
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto', padding: '.5rem 0', marginBottom: '1rem' }}>
+    <div ref={ref} style={{ display: 'flex', alignItems: 'center', gap: 0, overflowX: 'auto', padding: '.5rem 0', marginBottom: '1rem' }}>
       {steps.map((step, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+        <div key={i} style={{
+          display: 'flex', alignItems: 'center', flexShrink: 0,
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(12px)',
+          transition: `all 0.4s ${i * 0.08}s cubic-bezier(0.4, 0, 0.2, 1)`,
+        }}>
           <div style={{
             padding: '.75rem 1rem', borderRadius: 10, border: `1px solid ${accent}44`,
             background: accent + '0a', minWidth: 120, textAlign: 'center',
-          }}>
+            transition: 'all .25s',
+          }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = accent + '88'; el.style.background = accent + '18'; }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = accent + '44'; el.style.background = accent + '0a'; }}
+          >
             <div style={{ fontSize: 'var(--font-caption)', fontWeight: 500, color: 'var(--text)', marginBottom: 'var(--space-2xs)' }}>{step.label}</div>
             <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>{step.sub}</div>
           </div>
           {i < steps.length - 1 && (
-            <div style={{ color: accent, padding: '0 var(--space-sm)', fontSize: 'var(--font-sub-heading)', opacity: 0.6 }}>→</div>
+            <div style={{
+              color: accent, padding: '0 var(--space-sm)', fontSize: 'var(--font-sub-heading)',
+              opacity: visible ? 0.6 : 0,
+              transition: `opacity 0.3s ${i * 0.08 + 0.15}s ease`,
+            }}>→</div>
           )}
         </div>
       ))}
@@ -354,15 +407,21 @@ export function InfoBox({ accent, children }: { accent: string; children: React.
 /* ─── Recap Box ─── */
 
 export function RecapBox({ items, accent }: { items: string[]; accent: string }) {
+  const { ref, visible } = useReveal();
   return (
-    <div style={{
+    <div ref={ref} style={{
       padding: '1.25rem', borderRadius: 12,
       background: accent + '08', border: `1px solid ${accent}22`,
       marginBottom: '1rem',
     }}>
       <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: accent, textTransform: 'uppercase', letterSpacing: 'var(--ls-mono)', marginBottom: 'var(--space-md)' }}>Recap</div>
       {items.map((item, i) => (
-        <div key={i} style={{ display: 'flex', gap: '.5rem', marginBottom: i < items.length - 1 ? '.5rem' : 0 }}>
+        <div key={i} style={{
+          display: 'flex', gap: '.5rem', marginBottom: i < items.length - 1 ? '.5rem' : 0,
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateX(0)' : 'translateX(-12px)',
+          transition: `all 0.4s ${i * 0.06}s cubic-bezier(0.4, 0, 0.2, 1)`,
+        }}>
           <span style={{ color: accent }}>→</span>
           <span style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{item}</span>
         </div>
@@ -548,7 +607,10 @@ export function StepBuilder({ steps, accent }: { steps: { label: string; detail:
   return (
     <div style={{ marginBottom: '1rem' }}>
       {steps.map((step, i) => (
-        <div key={i} style={{ marginBottom: '.5rem' }}>
+        <div key={i} style={{
+          marginBottom: '.5rem',
+          animation: `fadeUp 0.3s ${i * 0.06}s ease both`,
+        }}>
           <button
             onClick={() => setActive(active === i ? null : i)}
             style={{
@@ -560,6 +622,8 @@ export function StepBuilder({ steps, accent }: { steps: { label: string; detail:
               textAlign: 'left', display: 'flex', alignItems: 'center', gap: '.75rem',
               transition: 'all .2s',
             }}
+            onMouseEnter={e => { if (active !== i) { e.currentTarget.style.borderColor = accent + '33'; e.currentTarget.style.background = accent + '08'; }}}
+            onMouseLeave={e => { if (active !== i) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg3)'; }}}
           >
             <span style={{
               width: 24, height: 24, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -567,18 +631,20 @@ export function StepBuilder({ steps, accent }: { steps: { label: string; detail:
               border: `1px solid ${active === i ? accent + '66' : 'var(--border2)'}`,
               fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
               flexShrink: 0,
+              transition: 'all .2s',
             }}>
               {i + 1}
             </span>
             <span style={{ flex: 1 }}>{step.label}</span>
-            <span style={{ transform: active === i ? 'rotate(180deg)' : 'none', transition: 'transform .2s', fontSize: 'var(--font-micro)' }}>▼</span>
+            <span style={{ transform: active === i ? 'rotate(180deg)' : 'none', transition: 'transform .25s cubic-bezier(0.34, 1.56, 0.64, 1)', fontSize: 'var(--font-micro)' }}>▼</span>
           </button>
           {active === i && (
             <div style={{
               padding: '.75rem 1rem .75rem 2.75rem',
               fontFamily: 'var(--font-mono)', fontSize: 'var(--font-label)',
               color: 'var(--muted)', lineHeight: 1.6,
-              animation: 'fadeUp .3s ease',
+              overflow: 'hidden',
+              animation: 'fadeUp 0.25s ease',
             }}>
               {step.detail}
             </div>
@@ -627,7 +693,9 @@ export function ToggleCompare({ labelA, labelB, renderA, renderB, accent }: {
           {labelB}
         </button>
       </div>
-      <div style={{ animation: 'fadeIn .3s ease' }}>
+      <div style={{
+        animation: 'fadeUp .25s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
         {showB ? renderB : renderA}
       </div>
     </div>
@@ -688,17 +756,31 @@ export function AnimatedPipeline({ stages, accent }: {
             background: i <= activeIdx ? accent + '1e' : 'var(--bg3)',
             border: `1px solid ${i <= activeIdx ? accent + '55' : 'var(--border)'}`,
             textAlign: 'center', minWidth: 90,
-            transition: 'all .4s ease',
-            transform: i === activeIdx ? 'scale(1.05)' : 'scale(1)',
+            transition: 'all .45s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            transform: i === activeIdx ? 'scale(1.08)' : i < activeIdx ? 'scale(1)' : 'scale(0.95)',
+            boxShadow: i === activeIdx ? `0 0 20px ${accent}33` : 'none',
           }}>
-            <div style={{ fontSize: '1.2rem', marginBottom: '.2rem' }}>{stage.icon}</div>
-            <div style={{ fontSize: 'var(--font-caption)', fontWeight: 500, color: i <= activeIdx ? accent : 'var(--muted)', transition: 'color .4s' }}>{stage.label}</div>
-            <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', marginTop: '.15rem' }}>{stage.desc}</div>
+            <div style={{
+              fontSize: '1.2rem', marginBottom: '.2rem',
+              transition: 'transform .3s',
+              transform: i === activeIdx ? 'scale(1.15)' : 'scale(1)',
+            }}>{stage.icon}</div>
+            <div style={{
+              fontSize: 'var(--font-caption)', fontWeight: 500,
+              color: i <= activeIdx ? accent : 'var(--muted)',
+              transition: 'color .45s',
+            }}>{stage.label}</div>
+            <div style={{
+              fontSize: 'var(--font-micro)', color: 'var(--muted)', marginTop: '.15rem',
+              opacity: i <= activeIdx ? 1 : 0.5,
+              transition: 'opacity .45s',
+            }}>{stage.desc}</div>
           </div>
           {i < stages.length - 1 && (
             <div style={{
-              padding: '0 .35rem', fontSize: 'var(--font-body-lg)', color: i < activeIdx ? accent : 'var(--muted)',
-              transition: 'color .4s',
+              padding: '0 .35rem', fontSize: 'var(--font-body-lg)',
+              color: i < activeIdx ? accent : 'var(--muted)',
+              transition: 'color .45s',
               animation: i === activeIdx ? 'pulseArrow .8s ease infinite' : 'none',
             }}>→</div>
           )}

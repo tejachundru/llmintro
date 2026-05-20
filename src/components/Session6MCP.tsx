@@ -210,7 +210,7 @@ export default function Session6MCP() {
     <section id="s6" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="06" tag="Session 6 · 1 hr" title="Giving the LLM Hands" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="06" tag="Session 6 · 1 hr" title="From Talk to Action" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           So far, the LLM can only <em>talk</em>. You ask, it answers. But what if it could <strong style={{ color: 'var(--text)' }}>actually do things</strong>? Send emails, read your calendar, search your files, book meetings?
         </p>

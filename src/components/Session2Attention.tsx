@@ -404,7 +404,7 @@ export default function Session2Attention() {
     <section id="s2" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="02" tag="Session 2 · 1.5 hrs" title="How LLMs Understand Words" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="02" tag="Topic 2" title="How LLMs Understand Words" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Here&apos;s the problem: in the sentence &ldquo;The cat sat on the mat because <strong style={{ color: 'var(--text)' }}>it</strong> was tired&rdquo; — what is &ldquo;it&rdquo;? The cat or the mat?
         </p>
