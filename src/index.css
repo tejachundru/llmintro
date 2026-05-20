@@ -1,22 +1,102 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   DESIGN TOKENS — Single source of truth
+   Change values here, everything updates.
+   ═══════════════════════════════════════════════════════ */
 
 :root {
-  --bg: #0a0c0f;
-  --bg2: #12151a;
-  --bg3: #1a1f28;
-  --border: #ffffff14;
-  --border2: #ffffff22;
-  --text: #e8eaf0;
-  --muted: #7a8099;
-  --accent: #4f9eff;
-  --accent2: #a78bfa;
-  --accent3: #34d399;
-  --accent4: #fb923c;
-  --accent5: #f472b6;
-  --accent6: #63dcb4;
+
+  /* ── Palette ── */
+  --bg:       #0a0c0f;
+  --bg2:      #12151a;
+  --bg3:      #1a1f28;
+  --border:   #ffffff14;
+  --border2:  #ffffff22;
+  --text:     #e8eaf0;
+  --muted:    #7a8099;
+  --accent:   #4f9eff;
+  --accent2:  #a78bfa;
+  --accent3:  #34d399;
+  --accent4:  #fb923c;
+  --accent5:  #f472b6;
+  --accent6:  #63dcb4;
+
+  /* ── Legacy Tokens (aliases for session components) ── */
+  --primary:       var(--bg2);
+  --ink:           var(--text);
+  --soft-stone:    var(--bg3);
+  --hairline:      var(--border);
+  --border-dark:   var(--border);
+  --muted-dark:    var(--muted);
+  --muted-dark-strong: var(--muted);
+  --ff-mono:       var(--font-mono);
+  --ff-serif:      var(--font-serif);
+  --ff-sans:       var(--font-sans);
+  --lh-body:       var(--lh-normal);
+
+  /* ── Typography Scale (increased for readability) ──
+     micro → label → caption → body → body-lg → sub-heading → heading → section-title → hero
+  */
+  --font-micro:        11px;
+  --font-label:        12px;
+  --font-caption:      13px;
+  --font-body:         15px;
+  --font-body-lg:      16px;
+  --font-sub-heading:  18px;
+  --font-heading:      22px;
+  --font-section-title: 26px;
+  --font-hero:         32px;
+  --font-hero-display: 48px;
+  --font-emoji:        28px;
+
+  /* Line-heights */
+  --lh-tight:    1.2;
+  --lh-snug:     1.4;
+  --lh-normal:   1.6;
+  --lh-relaxed:  1.75;
+
+  /* Letter-spacings */
+  --ls-mono:     0.06em;
+  --ls-wide:     0.1em;
+
+  /* ── Font Families ── */
+  --font-sans:   'Outfit', system-ui, -apple-system, sans-serif;
+  --font-serif:  'DM Serif Display', Georgia, serif;
+  --font-mono:   'DM Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* ── Spacing Scale ── */
+  --space-2xs:   4px;
+  --space-xs:    6px;
+  --space-sm:    8px;
+  --space-md:    12px;
+  --space-lg:    16px;
+  --space-xl:    24px;
+  --space-2xl:   32px;
+  --space-3xl:   48px;
+  --space-4xl:   64px;
+
+  /* ── Radii ── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   16px;
+  --radius-pill: 100px;
 }
+
+/* ═══════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════ */
 
 * {
   box-sizing: border-box;
@@ -29,10 +109,12 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  font-size: 15px;
-  line-height: 1.7;
+  font-family: var(--font-sans);
+  font-size: var(--font-body);
+  line-height: var(--lh-relaxed);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @keyframes fadeUp {

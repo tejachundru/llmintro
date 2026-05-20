@@ -1,5 +1,10 @@
-import { useState, useCallback } from 'react';
-import { AnalogyGrid, DemoCard, RevealSection, SectionHeader, SubSection, ConceptBlock, KeyPoint, CodeExample, FlowDiagram, InfoBox } from './shared';
+import { useState, useCallback,useEffect } from 'react';
+import {
+  RevealSection, SectionHeader, SubSection,
+  KeyPoint, FlowDiagram,
+  RecapBox, PracticeQuestions, QuickSummary, MentalModel,
+  ProbabilityBars, StepBuilder, ToggleCompare, AnimatedPipeline,
+} from './shared';
 
 const TOKEN_COLORS = [
   { bg: 'rgba(79,158,255,.15)', border: 'rgba(79,158,255,.4)' },
@@ -27,170 +32,528 @@ function naiveTokenize(text: string): string[] {
 
 const AC = '#4f9eff';
 
-export default function Session1Tokenizer() {
-  const [input, setInput] = useState('Hyderabad is a great city for AI engineers!');
+/* ─── Generation Animation ─── */
 
+function GenerationDemo() {
+  const fullText = 'The cat sat on the mat';
+  const words = fullText.split(' ');
+  const [idx, setIdx] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
+
+  const tick = useCallback(() => setIdx(i => {
+    if (i >= words.length) return i;
+    return i + 1;
+  }), [words.length]);
+
+  const reset = useCallback(() => {
+    setIdx(0);
+    setAutoPlay(true);
+  }, []);
+
+  useEffect(() => {
+    if (!autoPlay || idx >= words.length) return;
+    const t = setTimeout(tick, 700);
+    return () => clearTimeout(t);
+  }, [idx, autoPlay, tick]);
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        LLM generates one word at a time:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: '1rem', minHeight: 40 }}>
+          {words.slice(0, idx).map((w, i) => (
+            <span key={i} style={{
+              padding: '6px 14px', borderRadius: 8,
+              background: TOKEN_COLORS[i % TOKEN_COLORS.length].bg,
+              border: `1px solid ${TOKEN_COLORS[i % TOKEN_COLORS.length].border}`,
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+              color: 'var(--text)', animation: 'chipIn .2s ease',
+            }}>
+              {w}
+            </span>
+          ))}
+          {idx < words.length && (
+            <span style={{
+              display: 'inline-block', width: 2, height: 24,
+              background: AC, animation: 'blink .7s step-end infinite',
+              verticalAlign: 'middle',
+            }} />
+          )}
+          {idx >= words.length && (
+            <span style={{ fontSize: 'var(--font-label)', color: 'var(--accent3)', fontFamily: 'var(--font-mono)', padding: '6px 0' }}>
+              Done
+            </span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '.5rem' }}>
+          <button onClick={reset} style={{
+            padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
+            background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
+            cursor: 'pointer', fontFamily: 'var(--font-mono)',
+          }}>Replay</button>
+          <button onClick={tick} style={{
+            padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
+            background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
+            cursor: 'pointer', fontFamily: 'var(--font-mono)',
+          }}>Step</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Probability Demo ─── */
+
+function ProbabilityDemo() {
+  const [word, setWord] = useState('The cat sat on the');
+  const predictions: Record<string, { label: string; prob: number; color: string }[]> = {
+    'The cat sat on the': [
+      { label: 'mat', prob: 0.42, color: '#4f9eff' },
+      { label: 'floor', prob: 0.18, color: '#a78bfa' },
+      { label: 'couch', prob: 0.12, color: '#34d399' },
+      { label: 'chair', prob: 0.08, color: '#fb923c' },
+      { label: 'bed', prob: 0.06, color: '#f472b6' },
+    ],
+    'I love to eat': [
+      { label: 'pizza', prob: 0.35, color: '#4f9eff' },
+      { label: 'food', prob: 0.22, color: '#a78bfa' },
+      { label: 'ice cream', prob: 0.14, color: '#34d399' },
+      { label: 'sushi', prob: 0.09, color: '#fb923c' },
+    ],
+    'The capital of India is': [
+      { label: 'New Delhi', prob: 0.78, color: '#4f9eff' },
+      { label: 'Mumbai', prob: 0.08, color: '#a78bfa' },
+      { label: 'India', prob: 0.04, color: '#34d399' },
+    ],
+    'Python is a': [
+      { label: 'programming language', prob: 0.65, color: '#4f9eff' },
+      { label: 'snake', prob: 0.12, color: '#a78bfa' },
+      { label: 'language', prob: 0.08, color: '#34d399' },
+    ],
+    'She opened the': [
+      { label: 'door', prob: 0.38, color: '#4f9eff' },
+      { label: 'book', prob: 0.15, color: '#a78bfa' },
+      { label: 'window', prob: 0.12, color: '#34d399' },
+      { label: 'box', prob: 0.09, color: '#fb923c' },
+    ],
+  };
+
+  const probs = predictions[word] || predictions['The cat sat on the'];
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Click an input to see probability distribution:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {Object.keys(predictions).map((key) => (
+            <button
+              key={key}
+              onClick={() => setWord(key)}
+              style={{
+                padding: '.35rem .75rem', borderRadius: 8, fontSize: 'var(--font-caption)',
+                background: word === key ? AC + '1e' : 'var(--bg3)',
+                border: `1px solid ${word === key ? AC + '55' : 'var(--border)'}`,
+                color: word === key ? AC : 'var(--muted)',
+                cursor: 'pointer', fontFamily: 'var(--font-mono)',
+              }}
+            >
+              &ldquo;{key} ___&rdquo;
+            </button>
+          ))}
+        </div>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: 'var(--text)', marginBottom: '.5rem' }}>
+          Input: &ldquo;<span style={{ color: AC }}>{word}</span><span style={{ color: 'var(--accent4)', animation: 'blink .7s step-end infinite' }}>_</span>&rdquo;
+        </div>
+        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.25rem' }}>
+          Next word probabilities:
+        </div>
+        {probs.length > 0 && <ProbabilityBars items={probs} accent={AC} height={18} />}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Text to Numbers Demo ─── */
+
+function TextToNumbersDemo() {
+  const [input, setInput] = useState('AI');
+  const textToNum: Record<string, number[]> = {
+    A: [0.12, 0.87, 0.34, 0.56, 0.91],
+    I: [0.08, 0.92, 0.11, 0.73, 0.44],
+    AI: [0.45, 0.89, 0.23, 0.67, 0.78],
+    cat: [0.34, 0.12, 0.91, 0.56, 0.23],
+    dog: [0.31, 0.15, 0.88, 0.52, 0.27],
+    love: [0.91, 0.34, 0.12, 0.78, 0.56],
+    hate: [0.11, 0.87, 0.34, 0.23, 0.92],
+    hello: [0.45, 0.23, 0.89, 0.12, 0.67],
+    world: [0.56, 0.34, 0.78, 0.23, 0.91],
+  };
+  const vec = textToNum[input] || textToNum['AI'];
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        See how words become numbers:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {Object.keys(textToNum).map((key) => (
+            <button
+              key={key}
+              onClick={() => setInput(key)}
+              style={{
+                padding: '.35rem .75rem', borderRadius: 8, fontSize: 'var(--font-caption)',
+                background: input === key ? AC + '1e' : 'var(--bg3)',
+                border: `1px solid ${input === key ? AC + '55' : 'var(--border)'}`,
+                color: input === key ? AC : 'var(--muted)',
+                cursor: 'pointer', fontFamily: 'var(--font-mono)',
+              }}
+            >
+              &ldquo;{key}&rdquo;
+            </button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '.75rem' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-sub-heading)', color: AC, fontWeight: 600 }}>&ldquo;{input}&rdquo;</span>
+          <span style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)' }}>&rarr;</span>
+          <div style={{ display: 'flex', gap: 3 }}>
+            {vec.map((v, i) => (
+              <div key={i} style={{
+                width: 32, height: 32, borderRadius: 6,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                background: `rgba(79,158,255,${v * 0.4})`,
+                border: '1px solid rgba(79,158,255,0.3)',
+                color: v > 0.5 ? '#fff' : 'var(--muted)',
+                animation: `chipIn .2s ${i * 0.05}s ease both`,
+              }}>
+                {(v * 100).toFixed(0)}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)' }}>
+          Words with similar meanings have similar number patterns
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Session1Tokenizer() {
+  const [input, setInput] = useState('The cat sat on the mat');
   const tokens = naiveTokenize(input);
   const charCount = input.length;
   const ratio = tokens.length ? (charCount / tokens.length).toFixed(1) : '0';
-  const cost = ((tokens.length / 1000) * 0.03).toFixed(4);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
   }, []);
 
   return (
-    <section id="s1" style={{ maxWidth: 900, margin: '0 auto', padding: '5rem 2rem' }}>
+    <section id="s1" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
+      {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="01" tag="Session 1 · 1.5 hrs" title="What is an LLM?" accentColor={AC} borderColor="rgba(79,158,255,0.3)" />
-        <p style={{ color: 'var(--muted)', maxWidth: 600, marginBottom: '2.5rem', fontSize: 15 }}>
-          Forget the hype. An LLM is fundamentally a <strong style={{ color: 'var(--text)' }}>next-token predictor</strong> trained on enormous text.
-          Everything amazing it does flows from that one idea — but the details of <em>how</em> it predicts are what make it powerful.
+        <SectionHeader num="01" tag="Session 1 · 1.5 hrs" title="What is an LLM?" accentColor={AC} borderColor={`${AC}44`} />
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          An LLM is not a brain. It is a <strong style={{ color: 'var(--text)' }}>next-word prediction machine</strong> that got really, really good at its one job.
         </p>
       </RevealSection>
 
-      {/* ── How Training Works ── */}
-      <RevealSection>
-        <SubSection title="How does an LLM learn?" accent={AC}>
-          <ConceptBlock title="The training pipeline" accent={AC}>
-            An LLM doesn't memorize text. It learns <strong style={{ color: 'var(--text)' }}>statistical patterns</strong> by reading
-            billions of tokens and adjusting its weights to minimize prediction error. Think of it as a giant compression algorithm:
-            the model distills the structure of language into numbers.
-          </ConceptBlock>
-
-          <FlowDiagram accent={AC} steps={[
-            { label: 'Collect Data', sub: 'Trillions of tokens' },
-            { label: 'Tokenize', sub: 'Text → numbers' },
-            { label: 'Train', sub: 'Adjust weights' },
-            { label: 'Predict', sub: 'Next token' },
-          ]} />
-
-          <KeyPoint num={1} title="Pre-training: the bulk of learning" accent={AC}>
-            The model reads a token, predicts the next one, checks if it was right, and adjusts its weights.
-            This loop runs <strong style={{ color: 'var(--text)' }}>trillions of times</strong>. Each adjustment is tiny,
-            but over months of training on thousands of GPUs, the model internalizes grammar, facts, reasoning patterns,
-            and even coding logic — all from predicting the next token.
-          </KeyPoint>
-
-          <KeyPoint num={2} title="Fine-tuning: shaping behavior" accent={AC}>
-            Pre-training gives a model that can complete any text. Fine-tuning on curated Q&A pairs teaches it to
-            <strong style={{ color: 'var(--text)' }}> follow instructions</strong> instead of just completing text.
-            RLHF (Reinforcement Learning from Human Feedback) further aligns it to be helpful, harmless, and honest.
-          </KeyPoint>
-
-          <KeyPoint num={3} title="Weights: the model's knowledge" accent={AC}>
-            A model like GPT-4 has ~1.8 trillion parameters (numbers). These are the "weights" — the knowledge.
-            Training is the process of finding the right values for all those numbers so that next-token predictions
-            are accurate. No one programmed these numbers; they were discovered through optimization.
-          </KeyPoint>
-        </SubSection>
+      {/* ── The Analogy ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          The Autocomplete Analogy
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          Your phone suggests the next word when you type. &ldquo;I love ___&rdquo; suggests &ldquo;you&rdquo;, &ldquo;it&rdquo;, &ldquo;this&rdquo;. An LLM is exactly that, but billions of times bigger, trained on almost everything on the internet.
+        </p>
+        <AnimatedPipeline accent={AC} stages={[
+          { icon: '...', label: 'You Type', desc: '"The cat sat on the"' },
+          { icon: '...', label: 'LLM Thinks', desc: 'Checks probabilities' },
+          { icon: '...', label: 'Picks Best', desc: 'Highest = "mat"' },
+          { icon: '...', label: 'Adds Word', desc: 'Now "The cat sat on the mat"' },
+          { icon: '...', label: 'Repeats', desc: 'Predicts next word...' },
+        ]} />
       </RevealSection>
 
-      {/* ── Next-Token Prediction ── */}
+      {/* ── Playground: the three core demos, unwrapped ── */}
       <RevealSection>
-        <SubSection title="Next-token prediction: the core loop" accent={AC}>
-          <ConceptBlock title="Probability over vocabulary" accent={AC}>
-            At every step, the model doesn't just pick one word. It outputs a <strong style={{ color: 'var(--text)' }}>probability distribution</strong> over
-            its entire vocabulary (~100K tokens). The token with the highest probability is usually chosen — but temperature
-            and sampling can change this.
-          </ConceptBlock>
-
-          <CodeExample accent={AC} code={`# Simplified next-token prediction
-input = "The cat sat on the"
-logits = model(input)                    # shape: [1, vocab_size]
-probs = softmax(logits / temperature)     # turn into probabilities
-next_token = sample(probs)               # pick one token
-# → "mat" (probability: 0.34)
-# → "floor" (probability: 0.12)
-# → "couch" (probability: 0.08)`} />
-
-          <InfoBox accent={AC}>
-            <strong style={{ color: 'var(--text)' }}>Why does this work?</strong> Because language is highly predictable.
-            "The cat sat on the ___" has very few plausible completions. After seeing trillions of examples,
-            the model learns which completions are plausible in any context — and that's effectively understanding.
-          </InfoBox>
-        </SubSection>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
+          The Playground
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', marginBottom: '2rem', letterSpacing: 'var(--ls-wide)', textTransform: 'uppercase' }}>
+          Interact with these demos to see how LLMs actually work
+        </p>
+        <GenerationDemo />
+        <ProbabilityDemo />
+        <TextToNumbersDemo />
       </RevealSection>
 
       {/* ── Tokens ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <SubSection title="Tokens: The Building Blocks" accent={AC}>
+          <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640 }}>
+            LLMs do not read whole words. They read <strong style={{ color: 'var(--text)' }}>tokens</strong>, which are chunks of text. Common words like &ldquo;the&rdquo; are one token. Rare words get split: &ldquo;unbelievable&rdquo; becomes &ldquo;un&rdquo; + &ldquo;believe&rdquo; + &ldquo;able&rdquo;.
+          </p>
+
+          <div style={{
+            background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+            padding: '1.25rem', marginBottom: '1.5rem',
+          }}>
+            {[
+              { text: 'Hello, world!', tokens: ['Hello', ', ', 'world', '!'] },
+              { text: 'I love pizza', tokens: ['I', ' love', ' pizza'] },
+              { text: 'unbelievable', tokens: ['un', 'believe', 'able'] },
+              { text: 'Hyderabad is great', tokens: ['Hyder', 'abad', ' is', ' great'] },
+            ].map((ex, i) => (
+              <div key={i} style={{
+                display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: i < 3 ? '.6rem' : 0,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)',
+              }}>
+                <span style={{ color: 'var(--muted)', minWidth: 140 }}>&ldquo;{ex.text}&rdquo;</span>
+                <span style={{ color: 'var(--muted)' }}>&rarr;</span>
+                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  {ex.tokens.map((t, j) => (
+                    <span key={j} style={{
+                      padding: '2px 8px', borderRadius: 4,
+                      background: TOKEN_COLORS[j % TOKEN_COLORS.length].bg,
+                      border: `1px solid ${TOKEN_COLORS[j % TOKEN_COLORS.length].border}`,
+                      color: 'var(--text)',
+                    }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <ToggleCompare
+            accent={AC}
+            labelA="Text View"
+            labelB="Token View"
+            renderA={
+              <div style={{
+                padding: '1rem', borderRadius: 8, background: 'var(--bg2)',
+                border: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+                color: 'var(--text)', lineHeight: 1.8,
+              }}>
+                The cat sat on the mat and purred loudly while eating fish
+              </div>
+            }
+            renderB={
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, padding: '.5rem' }}>
+                {['The', ' cat', ' sat', ' on', ' the', ' mat', ' and', ' purr', 'ed', ' loudly', ' while', ' eating', ' fish'].map((t, i) => (
+                  <span key={i} style={{
+                    padding: '3px 8px', borderRadius: 4, animation: `chipIn .2s ${i * 0.03}s ease both`,
+                    background: TOKEN_COLORS[i % TOKEN_COLORS.length].bg,
+                    border: `1px solid ${TOKEN_COLORS[i % TOKEN_COLORS.length].border}`,
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: 'var(--text)',
+                  }}>
+                    {t.trim() ? t : '\u00B7'}
+                  </span>
+                ))}
+              </div>
+            }
+          />
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <KeyPoint num={1} title="Why tokens matter for your wallet" accent={AC}>
+              APIs charge by <strong style={{ color: 'var(--text)' }}>tokens, not words</strong>.
+              &ldquo;The cat sat&rdquo; = 3 tokens. &ldquo;Hyderabad is great&rdquo; = 4 tokens (Hyder+abad = 2 tokens for one word).
+              Indian languages often use <strong style={{ color: 'var(--text)' }}>2-4x more tokens</strong> than English.
+            </KeyPoint>
+          </div>
+        </SubSection>
+      </RevealSection>
+
+      {/* ── Training ── */}
       <RevealSection>
-        <SubSection title="Tokens: the atoms of language" accent={AC}>
-          <ConceptBlock title="Sub-word tokenization" accent={AC}>
-            LLMs don't read characters or whole words. They read <strong style={{ color: 'var(--text)' }}>tokens</strong> —
-            sub-word chunks. Common words are single tokens; rare words get split.
-            "unbelievable" → ["un", "believ", "able"]. This handles any word, even ones never seen in training.
-          </ConceptBlock>
+        <SubSection title="How Does It Learn?" accent={AC}>
+          <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '1.5rem' }}>
+            Imagine a student doing fill-in-the-blank questions for months, non-stop, learning from every mistake. That is LLM training.
+          </p>
 
-          <KeyPoint num={1} title="BPE: Byte-Pair Encoding" accent={AC}>
-            The tokenizer is built by repeatedly merging the most common byte pairs in the training data.
-            Starting from individual characters, it builds up a vocabulary of ~100K tokens.
-            This vocabulary is fixed after training — every input must be expressible with these tokens.
-          </KeyPoint>
+          <FlowDiagram accent={AC} steps={[
+            { label: 'Read Text', sub: 'Billions of pages' },
+            { label: 'Guess Next Word', sub: 'Make a prediction' },
+            { label: 'Check Answer', sub: 'Was I right?' },
+            { label: 'Adjust Slightly', sub: 'Fix the error' },
+            { label: 'Repeat', sub: 'Trillions of times' },
+          ]} />
 
-          <KeyPoint num={2} title="Token count matters for cost and quality" accent={AC}>
-            APIs charge per token. A 1000-word email is ~1300 tokens. A code file with rare variable names
-            can be 2-3x more tokens than you'd expect. Non-English text often uses 2-4x more tokens than English.
-            <strong style={{ color: 'var(--text)' }}> Always count tokens, not words, when estimating cost.</strong>
-          </KeyPoint>
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem',
+          }}>
+            {[
+              { title: 'Pre-training', desc: 'The model reads the whole internet. Takes months, costs millions. Learns grammar, facts, reasoning.' },
+              { title: 'Fine-tuning', desc: 'Teach it to follow instructions using Q&A examples. Like training a dog with reward signals.' },
+              { title: 'RLHF', desc: 'Humans rate answers. The model learns preferences. Why ChatGPT is polite, not raw.' },
+            ].map((card, i) => (
+              <div key={i} style={{
+                padding: '1.25rem', borderRadius: 12, background: 'var(--bg2)',
+                border: `1px solid ${AC}22`,
+              }}>
+                <h4 style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--text)', margin: '0 0 .35rem 0' }}>{card.title}</h4>
+                <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{card.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <StepBuilder accent={AC} steps={[
+            { label: 'Step 1: Collect massive text data', detail: 'The internet, books, Wikipedia, code repos. Trillions of words worth of text. Cleaner data means a better model.' },
+            { label: 'Step 2: Convert text to tokens', detail: 'All text gets split into tokens (sub-word chunks). The tokenizer is built by finding the most common character pairs and merging them repeatedly.' },
+            { label: 'Step 3: Predict next token, check, adjust', detail: 'The model reads tokens one by one, predicts the next, compares to the actual next token, and adjusts weights by a tiny amount. Repeat trillions of times.' },
+            { label: 'Step 4: Fine-tune on instructions', detail: 'Take the base model and train it on Q&A pairs. This teaches it to follow instructions instead of just completing text.' },
+            { label: 'Step 5: Align with human preferences', detail: 'RLHF: humans rate multiple answers. The model learns which answers humans prefer: polite, helpful, honest.' },
+          ]} />
         </SubSection>
       </RevealSection>
 
       {/* ── Emergent Abilities ── */}
-      <RevealSection>
-        <SubSection title="Emergent abilities: scale unlocks new skills" accent={AC}>
-          <AnalogyGrid items={[
-            { emoji: '📐', title: 'Scale is the magic', desc: 'Bigger data + bigger model + more compute = emergent abilities. Reasoning, coding, and creativity weren\'t explicitly programmed — they emerged from scale.' },
-            { emoji: '🧠', title: 'Phase transitions', desc: 'Research shows abilities like multi-step reasoning appear suddenly at certain scale thresholds. A 7B model can\'t do chain-of-thought; a 70B model can. It\'s not gradual.' },
-            { emoji: '🎯', title: 'In-context learning', desc: 'GPT-3\'s breakthrough: the model learns new tasks from examples in the prompt, without weight updates. This wasn\'t trained for — it emerged from predicting the next token at scale.' },
-            { emoji: '🗜️', title: 'Compression = intelligence', desc: 'Training is lossy compression of the internet into weights. The better the compression, the more the model "understands." Understanding is what good compression looks like.' },
-          ]} />
-        </SubSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          The Crazy Part: Skills That Just Appear
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '1.5rem' }}>
+          At small sizes, the model can only complete sentences. At huge sizes, it can suddenly write code, translate, solve math. These skills were never taught; they emerged from scale.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          {[
+            { title: 'Emergence', desc: 'At certain model sizes, reasoning suddenly appears. A 1B model cannot reason; a 70B model can. It is not gradual.' },
+            { title: 'Like ice forming', desc: 'At 0\u00B0C, water suddenly becomes solid. At certain sizes, new capabilities crystallize from raw prediction ability.' },
+            { title: 'In-context learning', desc: 'Show the model 3 examples of a new task. It immediately learns to do it, without any training. This emerged from scale.' },
+          ].map((card, i) => (
+            <div key={i} style={{
+              padding: '1.25rem', borderRadius: 12, background: 'var(--bg2)',
+              border: '1px solid var(--border)',
+            }}>
+              <h4 style={{ fontSize: 'var(--font-body-lg)', fontWeight: 500, color: 'var(--text)', margin: '0 0 .35rem 0' }}>{card.title}</h4>
+              <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{card.desc}</div>
+            </div>
+          ))}
+        </div>
       </RevealSection>
 
-      {/* ── Live Demo ── */}
+      {/* ── Token Playground (session closer) ── */}
       <RevealSection>
-        <DemoCard label="Live Demo — Tokenizer" title="Watch text become tokens" desc="Type anything below and see how it gets split into tokens. Notice how spaces, punctuation, and rare words get their own tokens.">
-          <div style={{ background: 'var(--bg3)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem' }}>
-            <textarea
-              value={input}
-              onChange={handleChange}
-              style={{
-                width: '100%', background: 'transparent', border: 'none', outline: 'none',
-                color: 'var(--text)', fontFamily: "'DM Mono', monospace", fontSize: 14,
-                resize: 'vertical', minHeight: 80, lineHeight: 1.6,
-              }}
-              placeholder="Type something..."
-            />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 40, marginTop: '.75rem' }}>
-              {tokens.map((t, i) => {
-                const c = TOKEN_COLORS[i % TOKEN_COLORS.length];
-                return (
-                  <span
-                    key={i}
-                    title={`Token ${i + 1}: "${t}" (${t.length} chars)`}
-                    style={{
-                      padding: '3px 10px', borderRadius: 6,
-                      fontFamily: "'DM Mono', monospace", fontSize: 13,
-                      background: c.bg, border: `1px solid ${c.border}`, color: 'var(--text)',
-                      animation: 'chipIn .2s ease both', animationDelay: `${i * 0.03}s`,
-                    }}
-                  >
-                    {t === ' ' ? '·' : t.replace(/ /g, '·')}
-                  </span>
-                );
-              })}
-            </div>
-            <div style={{
-              display: 'flex', gap: '1.5rem', marginTop: '1rem', paddingTop: '1rem',
-              borderTop: '1px solid var(--border)', fontSize: 13, color: 'var(--muted)', flexWrap: 'wrap',
-            }}>
-              <div>Tokens: <strong style={{ color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>{tokens.length}</strong></div>
-              <div>Characters: <strong style={{ color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>{charCount}</strong></div>
-              <div>Ratio: <strong style={{ color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>{ratio}</strong> chars/token</div>
-              <div>~Cost: <strong style={{ color: 'var(--text)', fontFamily: "'DM Mono', monospace" }}>${cost}</strong> (GPT-4 est.)</div>
-            </div>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
+          Try It Yourself
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+          Type anything and watch it get split into tokens
+        </p>
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '1.25rem',
+        }}>
+          <textarea
+            value={input}
+            onChange={handleChange}
+            aria-label="Tokenize text input"
+            style={{
+              width: '100%', background: 'transparent', border: 'none', outline: 'none',
+              color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+              resize: 'vertical', minHeight: 80, lineHeight: 'var(--lh-normal)',
+            }}
+            placeholder="Type something..."
+          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, minHeight: 40, marginTop: '.75rem' }}>
+            {tokens.map((t, i) => {
+              const c = TOKEN_COLORS[i % TOKEN_COLORS.length];
+              return (
+                <span
+                  key={i}
+                  style={{
+                    padding: '3px 10px', borderRadius: 6,
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+                    background: c.bg, border: `1px solid ${c.border}`, color: 'var(--text)',
+                    animation: 'chipIn .2s ease both', animationDelay: `${i * 0.03}s`,
+                  }}
+                >
+                  {t === ' ' ? '\u00B7' : t.replace(/ /g, '\u00B7')}
+                </span>
+              );
+            })}
           </div>
-        </DemoCard>
+          <div style={{
+            display: 'flex', gap: '1.5rem', marginTop: '1rem', paddingTop: '1rem',
+            borderTop: '1px solid var(--border)', fontSize: 'var(--font-body)', color: 'var(--muted)', flexWrap: 'wrap',
+          }}>
+            <div>Tokens: <strong style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{tokens.length}</strong></div>
+            <div>Characters: <strong style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{charCount}</strong></div>
+            <div>Ratio: <strong style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>{ratio}</strong> chars/token</div>
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* ── Recap + Mental Model ── */}
+      <RevealSection>
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 300px' }}>
+            <RecapBox accent={AC} items={[
+              'An LLM is just a next-word prediction machine, nothing more.',
+              'It reads tokens (word chunks), not whole words or letters.',
+              'Training = practice guessing the next word trillions of times.',
+              'Fine-tuning teaches it to follow instructions.',
+              'Skills can "emerge" at larger sizes without being taught.',
+            ]} />
+          </div>
+          <div style={{ flex: '1 1 300px' }}>
+            <MentalModel
+              emoji="..."
+              title="Your Mental Model"
+              desc="Think of an LLM as a super-powered autocomplete. It has read most of the internet and is really good at guessing what word comes next. That is it. Everything else, coding, reasoning, creativity, is just that one skill applied over and over."
+              accent={AC}
+            />
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* ── Quick Summary ── */}
+      <RevealSection>
+        <QuickSummary
+          accent={AC}
+          summary="An LLM predicts the next word, one token at a time. It learned by practicing on billions of texts. After enough practice, it got so good that it seems intelligent, but it is really just filling in the blank, over and over. Tokens matter because they are what the model reads and what you pay for."
+        />
+      </RevealSection>
+
+      {/* ── Practice Questions ── */}
+      <RevealSection>
+        <PracticeQuestions accent={AC} questions={[
+          'What is the single task an LLM does?',
+          'Why does "Hyderabad" use more tokens than "Mumbai"?',
+          'What does "emergent ability" mean? Give an example.',
+          'If a word has 7 characters and is rare, how many tokens might it become?',
+          'Why do APIs charge by tokens instead of by words?',
+        ]} />
+      </RevealSection>
+
+      {/* ── What to Learn Next ── */}
+      <RevealSection>
+        <div style={{
+          padding: '1.25rem', borderRadius: 12,
+          background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',
+        }}>
+          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
+          <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-normal)' }}>
+            Now you know what an LLM <em>is</em>. Next we will look at <strong style={{ color: 'var(--accent2)' }}>how it decides</strong> which word to predict: the <strong style={{ color: 'var(--accent2)' }}>Attention mechanism</strong>.
+          </div>
+        </div>
       </RevealSection>
     </section>
   );

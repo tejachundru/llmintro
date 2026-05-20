@@ -27,23 +27,30 @@ export default function ProgressDots() {
   };
 
   return (
-    <nav style={{
+    <nav aria-label="Session navigation" style={{
       position: 'fixed', right: '1.5rem', top: '50%', transform: 'translateY(-50%)',
       display: 'flex', flexDirection: 'column', gap: '.5rem', zIndex: 100,
     }}>
       {LABELS.map((label, i) => (
         <button
           key={i}
-          title={label}
+          aria-label={label}
+          aria-current={active === i ? 'true' : undefined}
           onClick={() => scrollTo(i)}
           style={{
-            width: 8, height: 8, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            width: 44, height: 44, borderRadius: '50%', border: 'none', cursor: 'pointer',
+            background: 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+          }}
+        >
+          <span style={{
+            width: 8, height: 8, borderRadius: '50%',
             background: active === i ? 'var(--accent)' : 'var(--border2)',
             transform: active === i ? 'scale(1.4)' : 'scale(1)',
             transition: 'all .3s',
-            padding: 0,
-          }}
-        />
+            display: 'block',
+          }} />
+        </button>
       ))}
     </nav>
   );

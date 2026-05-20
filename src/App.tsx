@@ -1,5 +1,5 @@
 import Hero from './components/Hero';
-import ProgressDots from './components/ProgressDots';
+import SessionNav from './components/SessionNav';
 import Session1Tokenizer from './components/Session1Tokenizer';
 import Session2Attention from './components/Session2Attention';
 import Session3Context from './components/Session3Context';
@@ -11,24 +11,27 @@ import { Divider } from './components/shared';
 export default function App() {
   return (
     <>
-      <ProgressDots />
-      <Hero />
+      <header>
+        <Hero />
+      </header>
+      <main style={{ paddingBottom: 80 }}>
+        <Session1Tokenizer />
+        <Divider />
+        <Session2Attention />
+        <Divider />
+        <Session3Context />
+        <Divider />
+        <Session4RAG />
+        <Divider />
+        <Session5Prompting />
+        <Divider />
+        <Session6MCP />
+      </main>
       <Divider />
-      <Session1Tokenizer />
-      <Divider />
-      <Session2Attention />
-      <Divider />
-      <Session3Context />
-      <Divider />
-      <Session4RAG />
-      <Divider />
-      <Session5Prompting />
-      <Divider />
-      <Session6MCP />
-      <Divider />
-      <footer style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--muted)', fontSize: 13 }}>
-        LLMs Under the Hood — Team Training · 6 Sessions
+      <footer style={{ textAlign: 'center', padding: 'var(--space-4xl) var(--space-xl)', color: 'var(--muted)', fontSize: 'var(--font-caption)' }}>
+        LLMs Made Simple — Team Training · 6 Sessions
       </footer>
+      <SessionNav />
     </>
   );
 }

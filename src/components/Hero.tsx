@@ -1,10 +1,10 @@
 const sessions = [
-  { num: '01', label: 'What is an LLM?', sub: 'Training, tokens, next-token prediction', href: '#s1', accent: 'var(--accent)' },
-  { num: '02', label: 'Attention & Transformers', sub: 'Q/K/V, multi-head, positional encoding', href: '#s2', accent: 'var(--accent2)' },
-  { num: '03', label: 'Context Window', sub: 'KV cache, O(n²), lost-in-middle', href: '#s3', accent: 'var(--accent3)' },
-  { num: '04', label: 'RAG', sub: 'Embeddings, chunking, vector search', href: '#s4', accent: 'var(--accent4)' },
-  { num: '05', label: 'Prompting', sub: 'System prompts, CoT, temperature', href: '#s5', accent: 'var(--accent5)' },
-  { num: '06', label: 'MCP & Tools', sub: 'Protocol, tool calling, agentic workflows', href: '#s6', accent: 'var(--accent6)' },
+  { num: '01', label: 'What is an LLM?', sub: 'Tokens, training, next-word prediction', href: '#s1', accent: 'var(--accent)' },
+  { num: '02', label: 'How Words Connect', sub: 'Attention, QKV, transformers', href: '#s2', accent: 'var(--accent2)' },
+  { num: '03', label: 'Context Window', sub: 'Working memory, cost, limitations', href: '#s3', accent: 'var(--accent3)' },
+  { num: '04', label: 'RAG', sub: 'Open-book exam for LLMs', href: '#s4', accent: 'var(--accent4)' },
+  { num: '05', label: 'Prompting', sub: 'How to give instructions', href: '#s5', accent: 'var(--accent5)' },
+  { num: '06', label: 'MCP & Tools', sub: 'Giving the LLM hands', href: '#s6', accent: 'var(--accent6)' },
 ];
 
 export default function Hero() {
@@ -33,11 +33,11 @@ export default function Hero() {
           display: 'inline-block',
           background: 'rgba(79,158,255,0.1)', border: '1px solid rgba(79,158,255,0.3)',
           color: 'var(--accent)', padding: '.35rem 1rem', borderRadius: 100,
-          fontSize: 12, fontFamily: "'DM Mono', monospace", letterSpacing: '.1em',
+          fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', letterSpacing: 'var(--ls-wide)',
           textTransform: 'uppercase', marginBottom: '1.5rem',
           animation: 'fadeUp .8s ease both',
         }}>
-          Team Training · 6 Sessions · Under the Hood
+          Team Training · 6 Sessions · Beginner Friendly
         </div>
 
         <h1 style={{
@@ -49,22 +49,20 @@ export default function Hero() {
           LLMs{' '}
           <em style={{
             fontStyle: 'italic',
-            background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>Under the Hood</em>
+            color: 'var(--accent2)',
+          }}>Made Simple</em>
         </h1>
 
         <p style={{
-          fontSize: '1.1rem', color: 'var(--muted)', maxWidth: 560,
+          fontSize: 'var(--font-sub-heading)', color: 'var(--muted)', maxWidth: 560,
           margin: '0 auto 2.5rem',
           animation: 'fadeUp .8s .2s ease both',
         }}>
-          Not surface-level tips — real understanding of how LLMs work internally.
-          Training, attention, context, RAG, prompting, and tool-use — explained for beginners who want depth.
+          No jargon. No assumed knowledge. Just clear, visual explanations of how LLMs really work —
+          from tokens to tools. Each session builds on the last.
         </p>
 
-        <nav style={{
+        <nav aria-label="Session table of contents" style={{
           display: 'flex', flexWrap: 'wrap', gap: '.75rem', justifyContent: 'center',
           animation: 'fadeUp .8s .3s ease both',
         }}>
@@ -77,7 +75,7 @@ export default function Hero() {
                 padding: '.6rem 1.2rem', borderRadius: 10,
                 background: 'var(--bg2)', border: '1px solid var(--border2)',
                 color: 'var(--text)', textDecoration: 'none',
-                fontSize: 13, fontWeight: 500, transition: 'all .2s',
+                fontSize: 'var(--font-caption)', fontWeight: 500, transition: 'all .2s',
               }}
               onMouseEnter={e => {
                 const el = e.currentTarget;
@@ -95,7 +93,7 @@ export default function Hero() {
               <span style={{
                 width: 22, height: 22, borderRadius: 6, display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
-                fontSize: 11, fontWeight: 600, fontFamily: "'DM Mono', monospace",
+                fontSize: 'var(--font-micro)', fontWeight: 600, fontFamily: 'var(--font-mono)',
                 background: s.accent + '33', color: s.accent,
               }}>
                 {s.num}
