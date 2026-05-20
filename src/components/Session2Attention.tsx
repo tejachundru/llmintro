@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  RevealSection, SectionHeader, SubSection,
+  RevealSection, SectionHeader, SubSection, WarningBox,
   ConceptBlock, InfoBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   StepBuilder, AnimatedPipeline,
@@ -225,6 +225,129 @@ function QKVDemo() {
   );
 }
 
+/* ─── Attention Explorer — click words to see what they "look at" ─── */
+
+function AttentionExplorer() {
+  const sentences = [
+    { text: 'The dog chased the cat', links: ['The→dog', 'dog→chased', 'chased→cat'] },
+    { text: 'She gave him her book', links: ['She→gave', 'gave→book', 'her→book'] },
+    { text: 'The pizza was really tasty', links: ['The→pizza', 'pizza→tasty', 'really→tasty'] },
+  ];
+  const [activeSentence, setActiveSentence] = useState(0);
+  const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  const sentence = sentences[activeSentence];
+  const words = sentence.text.split(' ');
+
+  const linkMap: Record<string, number[]> = {};
+  words.forEach((w, i) => {
+    linkMap[i] = [];
+    sentence.links.forEach(link => {
+      const [from, to] = link.split('→');
+      if (from === w) {
+        const targetIdx = words.indexOf(to);
+        if (targetIdx >= 0) linkMap[i].push(targetIdx);
+      }
+      if (to === w) {
+        const sourceIdx = words.indexOf(from);
+        if (sourceIdx >= 0) linkMap[i].push(sourceIdx);
+      }
+    });
+  });
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Click a word — see which other words it &ldquo;attends to&rdquo;:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {sentences.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => { setActiveSentence(i); setSelectedWord(null); }}
+              style={{
+                padding: '.3rem .7rem', borderRadius: 6, cursor: 'pointer', fontFamily: 'var(--font-mono)',
+                fontSize: 'var(--font-micro)', border: '1px solid',
+                background: activeSentence === i ? AC + '1e' : 'var(--bg3)',
+                borderColor: activeSentence === i ? AC + '55' : 'var(--border)',
+                color: activeSentence === i ? AC : 'var(--muted)',
+                transition: 'all .2s',
+              }}
+            >
+              &ldquo;{s.text}&rdquo;
+            </button>
+          ))}
+        </div>
+
+        <div style={{
+          display: 'flex', justifyContent: 'center', gap: '.5rem',
+          padding: '1.5rem 0', position: 'relative', flexWrap: 'wrap',
+        }}>
+          {words.map((w, i) => {
+            const isSelected = selectedWord === i;
+            const connected = selectedWord !== null ? linkMap[selectedWord] : [];
+            const isConnected = connected.includes(i) && i !== selectedWord;
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <button
+                  onClick={() => setSelectedWord(isSelected ? null : i)}
+                  style={{
+                    padding: '.5rem .85rem', borderRadius: 8, cursor: 'pointer',
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+                    border: '1px solid',
+                    background: isSelected ? AC + '1e' : isConnected ? 'rgba(52,211,153,.15)' : 'var(--bg3)',
+                    borderColor: isSelected ? AC + '66' : isConnected ? 'rgba(52,211,153,.4)' : 'var(--border)',
+                    color: isSelected ? AC : isConnected ? '#34d399' : 'var(--text)',
+                    transform: isSelected ? 'scale(1.1)' : isConnected ? 'scale(1.05)' : 'scale(1)',
+                    transition: 'all .3s',
+                    fontWeight: isSelected || isConnected ? 600 : 400,
+                  }}
+                >
+                  {w}
+                </button>
+                {isSelected && (
+                  <span style={{
+                    marginTop: 4, fontSize: 'var(--font-micro)', color: AC,
+                    fontFamily: 'var(--font-mono)',
+                  }}>
+                    🔍 looking
+                  </span>
+                )}
+                {isConnected && (
+                  <span style={{
+                    marginTop: 4, fontSize: 'var(--font-micro)', color: '#34d399',
+                    fontFamily: 'var(--font-mono)',
+                  }}>
+                    ← connected
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {selectedWord !== null && (
+          <div style={{
+            padding: '.65rem .85rem', borderRadius: 8,
+            background: AC + '08', border: `1px solid ${AC}22`,
+            fontSize: 'var(--font-caption)', color: 'var(--muted)',
+            lineHeight: 'var(--lh-snug)', animation: 'fadeIn .25s ease',
+          }}>
+            <strong style={{ color: AC }}>&ldquo;{words[selectedWord]}&rdquo;</strong> pays attention to:
+            {linkMap[selectedWord].length > 0
+              ? <> <strong style={{ color: '#34d399' }}>{linkMap[selectedWord].map(i => `"${words[i]}"`).join(', ')}</strong></>
+              : <span> no direct connections (in this simplified view)</span>
+            }
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Attention Lines Canvas Demo (inline) ─── */
 
 function AttentionLinesDemo() {
@@ -283,9 +406,37 @@ export default function Session2Attention() {
       <RevealSection>
         <SectionHeader num="02" tag="Session 2 · 1.5 hrs" title="How LLMs Understand Words" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          How does the model know &ldquo;it&rdquo; refers to &ldquo;the cat&rdquo; and not &ldquo;the mat&rdquo;? The answer is <strong style={{ color: 'var(--text)' }}>attention</strong> —
-          the mechanism that lets every word look at every other word.
+          Here&apos;s the problem: in the sentence &ldquo;The cat sat on the mat because <strong style={{ color: 'var(--text)' }}>it</strong> was tired&rdquo; — what is &ldquo;it&rdquo;? The cat or the mat?
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          Humans know instantly. But computers? They see only individual words. <strong style={{ color: 'var(--text)' }}>Attention</strong> is the clever mechanism that lets every word &ldquo;look at&rdquo; every other word and decide what&apos;s connected. It&apos;s the reason LLMs understand context instead of just memorizing phrases.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          Attention is the <strong style={{ color: 'var(--text)' }}>secret sauce</strong> behind every modern LLM. Before 2017, models couldn&apos;t handle long sentences. Attention changed everything. Understanding it helps you know why LLMs are so powerful — and where they still mess up.
+        </ConceptBlock>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+          {[
+            { icon: '🧩', title: 'Connects ideas', desc: 'Links pronouns to nouns, actions to subjects across any distance' },
+            { icon: '⚡', title: 'Massively parallel', desc: 'Checks ALL word pairs simultaneously — not one at a time like old models' },
+            { icon: '📏', title: 'Distance doesn\'t matter', desc: 'Connects word 1 to word 1000 as easily as word 1 to word 2' },
+          ].map((r, i) => (
+            <div key={i} style={{
+              padding: '1rem 1.25rem', borderRadius: 12, background: 'var(--bg2)',
+              border: '1px solid var(--border)', transition: 'all .25s',
+            }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = AC + '44'; el.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = 'var(--border)'; el.style.transform = 'none'; }}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: '.35rem' }}>{r.icon}</div>
+              <div style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--text)', marginBottom: '.2rem' }}>{r.title}</div>
+              <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{r.desc}</div>
+            </div>
+          ))}
+        </div>
       </RevealSection>
 
       {/* ── The Analogy ── */}
@@ -299,10 +450,10 @@ export default function Session2Attention() {
           <strong style={{ color: 'var(--text)' }}> Attention is the model&apos;s spotlight</strong> — it shines brighter on important connections.
         </p>
         <AnimatedPipeline accent={AC} stages={[
-          { icon: '...', label: 'Input Words', desc: 'The cat sat on the mat' },
-          { icon: '...', label: 'Check All Pairs', desc: 'Every word × every word' },
-          { icon: '...', label: 'Score Relevance', desc: 'How important is this pair?' },
-          { icon: '...', label: 'Blend Info', desc: 'Borrow info from relevant words' },
+          { icon: '📝', label: 'Input Words', desc: 'The cat sat on the mat' },
+          { icon: '🔍', label: 'Check All Pairs', desc: 'Every word × every word' },
+          { icon: '📊', label: 'Score Relevance', desc: 'How important is this pair?' },
+          { icon: '🔄', label: 'Blend Info', desc: 'Borrow info from relevant words' },
         ]} />
       </RevealSection>
 
@@ -332,6 +483,7 @@ export default function Session2Attention() {
         </p>
 
         <AttentionHeatMap />
+        <AttentionExplorer />
         <QKVDemo />
         <AttentionLinesDemo />
       </RevealSection>
@@ -397,7 +549,7 @@ export default function Session2Attention() {
           Wait — Order Matters!
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Attention treats input as a <strong style={{ color: 'var(--text)' }}>bag of words</strong> — it has no built-in sense of order.
+          Here&apos;s a catch: attention treats input as a <strong style={{ color: 'var(--text)' }}>bag of words</strong> — it has no built-in sense of order.
           &ldquo;The dog bit the man&rdquo; and &ldquo;The man bit the dog&rdquo; would look identical without positional encoding.
         </p>
         <BeforeAfter
@@ -405,6 +557,10 @@ export default function Session2Attention() {
           before="Without position: 'dog bit man' = 'man bit dog' → BAD"
           after="With position: 'dog₁ bit₂ man₃' ≠ 'man₁ bit₂ dog₃' → CORRECT"
         />
+        <WarningBox accent={AC}>
+          <strong>Common confusion:</strong> Attention doesn&apos;t replace word order — it <em>adds</em> to it.
+          Positional encoding gives each word a &ldquo;seat number&rdquo; so the model knows the sequence even though it processes everything in parallel.
+        </WarningBox>
       </RevealSection>
 
       {/* ── Recap + Mental Model (side by side) ── */}
@@ -458,7 +614,7 @@ export default function Session2Attention() {
         }}>
           <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
           <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-normal)' }}>
-            You now know how LLMs connect words. But they can only &ldquo;see&rdquo; what&apos;s in their <strong style={{ color: 'var(--accent3)' }}>context window</strong> —
+            You now know how LLMs connect words. But they can only &ldquo;see&rdquo; what&apos;s in their <strong style={{ color: '#059669' }}>context window</strong> —
             next we&apos;ll explore this critical limitation.
           </div>
         </div>

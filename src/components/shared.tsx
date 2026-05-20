@@ -716,3 +716,197 @@ export function AnimatedPipeline({ stages, accent }: {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NEW INTERACTIVE COMPONENTS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── CompareSlider — drag to compare before/after ─── */
+
+export function CompareSlider({ left, right, leftLabel, rightLabel, accent }: {
+  left: React.ReactNode; right: React.ReactNode;
+  leftLabel: string; rightLabel: string; accent: string;
+}) {
+  const [pos, setPos] = useState(50);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const handleMove = (clientX: number) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    setPos((x / rect.width) * 100);
+  };
+
+  return (
+    <div style={{ marginBottom: '1.5rem', userSelect: 'none' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '.5rem', fontSize: 'var(--font-label)', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ color: 'var(--muted)' }}>{leftLabel}</span>
+        <span style={{ color: 'var(--muted)' }}>{rightLabel}</span>
+      </div>
+      <div
+        ref={containerRef}
+        onMouseDown={() => { dragging.current = true; }}
+        onMouseMove={e => { if (dragging.current) handleMove(e.clientX); }}
+        onMouseUp={() => { dragging.current = false; }}
+        onMouseLeave={() => { dragging.current = false; }}
+        onTouchMove={e => handleMove(e.touches[0].clientX)}
+        style={{
+          position: 'relative', overflow: 'hidden', borderRadius: 12,
+          background: 'var(--bg3)', border: '1px solid var(--border)', cursor: 'ew-resize',
+          minHeight: 100,
+        }}
+      >
+        <div style={{ position: 'absolute', inset: 0, padding: '1rem' }}>{left}</div>
+        <div style={{
+          position: 'absolute', inset: 0, padding: '1rem',
+          clipPath: `inset(0 ${100 - pos}% 0 0)`,
+          background: 'var(--bg2)', borderRight: `2px solid ${accent}`,
+          transition: dragging.current ? 'none' : 'clip-path .3s, border .3s',
+        }}>{right}</div>
+        <div style={{
+          position: 'absolute', top: 0, bottom: 0, left: `${pos}%`, width: 2,
+          background: accent, transform: 'translateX(-50%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', top: '50%', left: `${pos}%`,
+          width: 28, height: 28, borderRadius: '50%',
+          background: accent, transform: 'translate(-50%, -50%)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '12px', color: '#fff',
+          pointerEvents: 'none', boxShadow: `0 0 12px ${accent}66`,
+        }}>⇄</div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── LiveCounter — animated number count-up ─── */
+
+export function LiveCounter({ value, label, accent, suffix = '', decimals = 0 }: {
+  value: number; label: string; accent: string; suffix?: string; decimals?: number;
+}) {
+  const [display, setDisplay] = useState(0);
+  const [started, setStarted] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started) setStarted(true);
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [started]);
+
+  useEffect(() => {
+    if (!started) return;
+    const duration = 1000;
+    const steps = 30;
+    const increment = value / steps;
+    let current = 0;
+    const t = setInterval(() => {
+      current += increment;
+      if (current >= value) { setDisplay(value); clearInterval(t); }
+      else setDisplay(current);
+    }, duration / steps);
+    return () => clearInterval(t);
+  }, [started, value]);
+
+  return (
+    <div ref={ref} style={{
+      padding: '1rem', borderRadius: 12, background: accent + '0a',
+      border: `1px solid ${accent}22`, textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', marginBottom: '.25rem' }}>{label}</div>
+      <div style={{
+        fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 600,
+        fontFamily: 'var(--font-mono)', color: accent,
+      }}>
+        {started ? display.toFixed(decimals) + suffix : '0' + suffix}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Interactive WordGrid — click words to see relationships ─── */
+
+export function WordGrid({ words, accent }: {
+  words: { word: string; group: string; desc: string }[];
+  accent: string;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+
+  return (
+    <div style={{ marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {words.map((w, i) => (
+          <button
+            key={i}
+            onClick={() => setSelected(selected === i ? null : i)}
+            style={{
+              padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontFamily: 'var(--font-mono)',
+              fontSize: 'var(--font-caption)', border: '1px solid',
+              background: selected === i ? accent + '1e' : 'var(--bg3)',
+              borderColor: selected === i ? accent + '55' : 'var(--border)',
+              color: selected === i ? accent : 'var(--text)',
+              transition: 'all .2s',
+            }}
+          >
+            {w.word}
+          </button>
+        ))}
+      </div>
+      {selected !== null && (
+        <div style={{
+          marginTop: '.5rem', padding: '.65rem .85rem', borderRadius: 8,
+          background: accent + '08', border: `1px solid ${accent}22`,
+          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-label)',
+          color: 'var(--muted)', lineHeight: 'var(--lh-snug)',
+          animation: 'fadeIn .25s ease',
+        }}>
+          <strong style={{ color: accent }}>{words[selected].word}</strong> ({words[selected].group}): {words[selected].desc}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── PulseButton — button with animated ring ─── */
+
+export function PulseButton({ onClick, label, accent, icon }: {
+  onClick: () => void; label: string; accent: string; icon?: string;
+}) {
+  const [pulse, setPulse] = useState(false);
+  return (
+    <button
+      onClick={() => { onClick(); setPulse(true); setTimeout(() => setPulse(false), 600); }}
+      style={{
+        position: 'relative', padding: '.55rem 1.2rem', borderRadius: 9,
+        background: accent + '15', border: `1px solid ${accent}44`,
+        color: accent, fontSize: 'var(--font-body)', fontWeight: 500,
+        cursor: 'pointer', fontFamily: 'var(--font-sans)',
+        display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+        transition: 'all .2s',
+      }}
+    >
+      {icon && <span>{icon}</span>}
+      {label}
+      {pulse && (
+        <span style={{
+          position: 'absolute', inset: -4, borderRadius: 12,
+          border: `2px solid ${accent}`,
+          animation: 'ping .6s ease',
+        }} />
+      )}
+      <style>{`
+        @keyframes ping {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.3); opacity: 0; }
+        }
+      `}</style>
+    </button>
+  );
+}

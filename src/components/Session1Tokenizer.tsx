@@ -1,9 +1,10 @@
-import { useState, useCallback,useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
-  RevealSection, SectionHeader, SubSection,
-  KeyPoint, FlowDiagram,
+  RevealSection, SectionHeader, SubSection, WarningBox,
+  KeyPoint, FlowDiagram, ConceptBlock,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel,
   ProbabilityBars, StepBuilder, ToggleCompare, AnimatedPipeline,
+  LiveCounter, InteractiveSlider,
 } from './shared';
 
 const TOKEN_COLORS = [
@@ -32,6 +33,33 @@ function naiveTokenize(text: string): string[] {
 
 const AC = '#4f9eff';
 
+/* ─── Why This Matters ─── */
+
+function WhyThisMatters() {
+  const reasons = [
+    { icon: '💰', title: 'Costs real money', desc: 'APIs charge by tokens. "Hyderabad" costs 2x more than "Mumbai" because it splits into more tokens.' },
+    { icon: '🎯', title: 'Quality depends on setup', desc: 'Same LLM can be genius or gibberish — it all depends on how you ask. Prompting is a skill.' },
+    { icon: '🏗️', title: 'Architecture matters', desc: 'Attention, context, RAG — these are the building blocks every AI product uses today.' },
+  ];
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+      {reasons.map((r, i) => (
+        <div key={i} style={{
+          padding: '1rem 1.25rem', borderRadius: 12, background: 'var(--bg2)',
+          border: '1px solid var(--border)', transition: 'all .25s',
+        }}
+          onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = AC + '44'; el.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = 'var(--border)'; el.style.transform = 'none'; }}
+        >
+          <div style={{ fontSize: '1.5rem', marginBottom: '.35rem' }}>{r.icon}</div>
+          <div style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--text)', marginBottom: '.2rem' }}>{r.title}</div>
+          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{r.desc}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Generation Animation ─── */
 
 function GenerationDemo() {
@@ -39,6 +67,15 @@ function GenerationDemo() {
   const words = fullText.split(' ');
   const [idx, setIdx] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
+  const [showProbs, setShowProbs] = useState(false);
+
+  const wordProbs: Record<string, { candidates: { word: string; prob: number }[] }> = {
+    'The': { candidates: [{ word: 'cat', prob: 0.38 }, { word: 'dog', prob: 0.22 }, { word: 'man', prob: 0.15 }, { word: 'sun', prob: 0.08 }] },
+    'The cat': { candidates: [{ word: 'sat', prob: 0.45 }, { word: 'ran', prob: 0.18 }, { word: 'slept', prob: 0.12 }] },
+    'The cat sat': { candidates: [{ word: 'on', prob: 0.52 }, { word: 'in', prob: 0.20 }, { word: 'by', prob: 0.10 }] },
+    'The cat sat on': { candidates: [{ word: 'the', prob: 0.65 }, { word: 'a', prob: 0.15 }, { word: 'my', prob: 0.08 }] },
+    'The cat sat on the': { candidates: [{ word: 'mat', prob: 0.42 }, { word: 'floor', prob: 0.18 }, { word: 'couch', prob: 0.12 }, { word: 'bed', prob: 0.06 }] },
+  };
 
   const tick = useCallback(() => setIdx(i => {
     if (i >= words.length) return i;
@@ -56,16 +93,19 @@ function GenerationDemo() {
     return () => clearTimeout(t);
   }, [idx, autoPlay, tick]);
 
+  const currentPrefix = words.slice(0, idx).join(' ');
+  const nextWordCandidates = currentPrefix ? wordProbs[currentPrefix]?.candidates : null;
+
   return (
     <div style={{ marginBottom: '2.5rem' }}>
       <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
-        LLM generates one word at a time:
+        LLM generates one word at a time — each word is the &ldquo;winner&rdquo; of a probability contest:
       </div>
       <div style={{
         background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
         padding: '1.5rem',
       }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: '1rem', minHeight: 40 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: '1rem', minHeight: 40, alignItems: 'center' }}>
           {words.slice(0, idx).map((w, i) => (
             <span key={i} style={{
               padding: '6px 14px', borderRadius: 8,
@@ -73,8 +113,18 @@ function GenerationDemo() {
               border: `1px solid ${TOKEN_COLORS[i % TOKEN_COLORS.length].border}`,
               fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
               color: 'var(--text)', animation: 'chipIn .2s ease',
+              position: 'relative',
             }}>
               {w}
+              {showProbs && i > 0 && (
+                <span style={{
+                  position: 'absolute', top: -18, left: '50%', transform: 'translateX(-50%)',
+                  fontSize: 'var(--font-micro)', color: AC,
+                  fontFamily: 'var(--font-mono)', whiteSpace: 'nowrap',
+                }}>
+                  ~{Math.floor(30 + Math.random() * 40)}%
+                </span>
+              )}
             </span>
           ))}
           {idx < words.length && (
@@ -86,21 +136,62 @@ function GenerationDemo() {
           )}
           {idx >= words.length && (
             <span style={{ fontSize: 'var(--font-label)', color: 'var(--accent3)', fontFamily: 'var(--font-mono)', padding: '6px 0' }}>
-              Done
+              ✓ Complete
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', gap: '.5rem' }}>
+
+        {nextWordCandidates && idx > 0 && idx < words.length && (
+          <div style={{
+            marginBottom: '1rem', padding: '.65rem', borderRadius: 8,
+            background: 'var(--bg3)', border: '1px solid var(--border)',
+            animation: 'fadeIn .3s ease',
+          }}>
+            <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', marginBottom: '.35rem' }}>
+              Next-word probabilities for &ldquo;{currentPrefix}&rdquo;:
+            </div>
+            <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+              {nextWordCandidates.map((c, i) => {
+                const isWinner = i === 0;
+                return (
+                  <div key={i} style={{
+                    padding: '.25rem .6rem', borderRadius: 6,
+                    background: isWinner ? AC + '1e' : 'var(--bg2)',
+                    border: `1px solid ${isWinner ? AC + '55' : 'var(--border)'}`,
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                    color: isWinner ? AC : 'var(--muted)',
+                    display: 'flex', alignItems: 'center', gap: '.35rem',
+                  }}>
+                    <span style={{ fontWeight: isWinner ? 600 : 400 }}>{c.word}</span>
+                    <span style={{ opacity: 0.6 }}>{(c.prob * 100).toFixed(0)}%</span>
+                    {isWinner && <span style={{ color: AC }}>✓</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
           <button onClick={reset} style={{
             padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
             background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
             cursor: 'pointer', fontFamily: 'var(--font-mono)',
-          }}>Replay</button>
+          }}>↺ Replay</button>
           <button onClick={tick} style={{
             padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
             background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
             cursor: 'pointer', fontFamily: 'var(--font-mono)',
-          }}>Step</button>
+          }}>⏭ Step</button>
+          <button onClick={() => setShowProbs(s => !s)} style={{
+            padding: '.4rem .9rem', borderRadius: 8, cursor: 'pointer',
+            border: `1px solid ${showProbs ? AC + '55' : 'var(--border)'}`,
+            background: showProbs ? AC + '15' : 'var(--bg3)',
+            color: showProbs ? AC : 'var(--muted)',
+            fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)',
+          }}>
+            {showProbs ? '📊 Hide probs' : '📊 Show probs'}
+          </button>
         </div>
       </div>
     </div>
@@ -269,8 +360,19 @@ export default function Session1Tokenizer() {
       <RevealSection>
         <SectionHeader num="01" tag="Session 1 · 1.5 hrs" title="What is an LLM?" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          An LLM is not a brain. It is a <strong style={{ color: 'var(--text)' }}>next-word prediction machine</strong> that got really, really good at its one job.
+          Let&apos;s start with a question: <strong style={{ color: 'var(--text)' }}>How does ChatGPT know what to say?</strong>
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          Short answer: it doesn&apos;t <em>know</em> anything. It&apos;s not a brain. An LLM is a <strong style={{ color: 'var(--text)' }}>next-word prediction machine</strong> — it got incredibly good at guessing what word comes next. That&apos;s it. Everything else (coding, reasoning, creativity) is just that one skill, applied over and over.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          LLMs are changing how we work, code, and think. Understanding how they actually work (not the magic, the mechanics) helps you use them better, debug them when they fail, and build things with them. This first session gives you the <strong style={{ color: 'var(--text)' }}>one key insight</strong> that explains everything else.
+        </ConceptBlock>
+        <WhyThisMatters />
       </RevealSection>
 
       {/* ── The Analogy ── */}
@@ -282,11 +384,11 @@ export default function Session1Tokenizer() {
           Your phone suggests the next word when you type. &ldquo;I love ___&rdquo; suggests &ldquo;you&rdquo;, &ldquo;it&rdquo;, &ldquo;this&rdquo;. An LLM is exactly that, but billions of times bigger, trained on almost everything on the internet.
         </p>
         <AnimatedPipeline accent={AC} stages={[
-          { icon: '...', label: 'You Type', desc: '"The cat sat on the"' },
-          { icon: '...', label: 'LLM Thinks', desc: 'Checks probabilities' },
-          { icon: '...', label: 'Picks Best', desc: 'Highest = "mat"' },
-          { icon: '...', label: 'Adds Word', desc: 'Now "The cat sat on the mat"' },
-          { icon: '...', label: 'Repeats', desc: 'Predicts next word...' },
+          { icon: '✍️', label: 'You Type', desc: '"The cat sat on the"' },
+          { icon: '🧠', label: 'LLM Thinks', desc: 'Checks probabilities' },
+          { icon: '🎯', label: 'Picks Best', desc: 'Highest = "mat"' },
+          { icon: '➕', label: 'Adds Word', desc: 'Now "The cat sat on the mat"' },
+          { icon: '🔄', label: 'Repeats', desc: 'Predicts next word...' },
         ]} />
       </RevealSection>
 
@@ -446,6 +548,117 @@ export default function Session1Tokenizer() {
               <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{card.desc}</div>
             </div>
           ))}
+        </div>
+      </RevealSection>
+
+      {/* ── Interactive: Model Size Explorer ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
+          Interactive: How Big Is Big?
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', marginBottom: '1rem', letterSpacing: 'var(--ls-wide)', textTransform: 'uppercase' }}>
+          Drag to see how model size changes capability
+        </p>
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '1.5rem',
+        }}>
+          {(() => {
+            const ModelSizeExplorer = () => {
+              const [params, setParams] = useState(7);
+              const capabilities = [
+                { at: 0.1, label: 'Tiny', can: 'Basic word prediction, short sentences' },
+                { at: 1, label: 'Small', can: 'Simple Q&A, short stories' },
+                { at: 7, label: 'Medium', can: 'Chat, basic reasoning, code snippets' },
+                { at: 70, label: 'Large', can: 'Complex reasoning, translation, creative writing' },
+                { at: 500, label: 'Very Large', can: 'Advanced math, multi-step reasoning, expert-level tasks' },
+              ];
+              const current = capabilities.reduce((prev, curr) => Math.abs(curr.at - params) < Math.abs(prev.at - params) ? curr : prev);
+              return (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <LiveCounter value={params} label="Parameters (billions)" accent={AC} suffix="B" decimals={params < 1 ? 2 : params < 10 ? 1 : 0} />
+                    <div style={{ flex: 1 }}>
+                      <InteractiveSlider
+                        value={params} min={0.1} max={500} step={0.1}
+                        onChange={setParams} label="Drag to resize model" accent={AC}
+                        format={v => v < 1 ? v.toFixed(2) + 'B' : v.toFixed(v < 10 ? 1 : 0) + 'B'}
+                      />
+                    </div>
+                  </div>
+                  <div style={{
+                    padding: '1rem', borderRadius: 10,
+                    background: `linear-gradient(135deg, ${AC}15, ${AC}05)`,
+                    border: `1px solid ${AC}33`,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.5rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                        <span style={{
+                          padding: '2px 10px', borderRadius: 100,
+                          background: AC + '22', color: AC,
+                          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                          border: `1px solid ${AC}44`,
+                        }}>
+                          {current.label}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: AC, fontWeight: 600 }}>
+                          ~{current.at}B params
+                        </span>
+                      </div>
+                      <span style={{
+                        padding: '2px 10px', borderRadius: 100,
+                        background: params >= 70 ? 'rgba(52,211,153,.15)' : 'rgba(251,146,60,.15)',
+                        color: params >= 70 ? '#34d399' : '#fb923c',
+                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                      }}>
+                        {params >= 70 ? '🚀 Frontier' : params >= 7 ? '👍 Capable' : '🔰 Basic'}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 'var(--font-caption)', color: 'var(--text)', lineHeight: 'var(--lh-snug)' }}>{current.can}</div>
+                  </div>
+                  <div style={{ marginTop: '1rem', display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+                    {[
+                      { label: 'GPT-2', size: '1.5B' },
+                      { label: 'LLaMA-7B', size: '7B' },
+                      { label: 'GPT-3', size: '175B' },
+                      { label: 'GPT-4', size: '~1.8T' },
+                    ].map(m => (
+                      <button
+                        key={m.label}
+                        onClick={() => setParams(parseFloat(m.size))}
+                        style={{
+                          padding: '.3rem .7rem', borderRadius: 6, cursor: 'pointer',
+                          background: 'var(--bg3)', border: '1px solid var(--border)',
+                          color: 'var(--muted)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                        }}
+                      >
+                        {m.label}: {m.size}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              );
+            };
+            return <ModelSizeExplorer />;
+          })()}
+        </div>
+      </RevealSection>
+
+      {/* ── Common Mistakes ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Common Confusions
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;The LLM understands what I&apos;m saying.&rdquo;</strong> No, it doesn&apos;t. It predicts words. It has no consciousness, no feelings, no real understanding. It just got so good at prediction that it <em>seems</em> to understand. Don&apos;t anthropomorphize it.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;More tokens = smarter answer.&rdquo;</strong> Not necessarily. A long, rambling prompt can actually make answers worse because the model&apos;s attention gets diluted. Be concise.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;It can reason like a human.&rdquo;</strong> It can <em>simulate</em> reasoning by predicting what a reasoning answer looks like. But it can&apos;t actually think. This is why it sometimes gives confident wrong answers (hallucinations).
+          </WarningBox>
         </div>
       </RevealSection>
 

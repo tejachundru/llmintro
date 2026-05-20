@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
   ConceptBlock, CodeExample, WarningBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel,
-  StepBuilder, AnimatedPipeline,
+  StepBuilder, AnimatedPipeline, LiveCounter, InteractiveSlider,
 } from './shared';
 
 const MAX_CTX = 128000;
@@ -111,6 +111,113 @@ function ContextCalculator() {
             Click the buttons above to add items to context
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Cost Calculator — see how context size affects your bill ─── */
+
+function CostCalculator() {
+  const [inputTokens, setInputTokens] = useState(4000);
+  const [outputTokens, setOutputTokens] = useState(500);
+  const [model, setModel] = useState<'gpt4' | 'claude' | 'gemini'>('gpt4');
+
+  const pricing = {
+    gpt4: { input: 10, output: 30, label: 'GPT-4 Turbo', color: '#4f9eff' },
+    claude: { input: 8, output: 24, label: 'Claude 3', color: '#a78bfa' },
+    gemini: { input: 3.5, output: 10.5, label: 'Gemini 1.5', color: '#34d399' },
+  };
+
+  const p = pricing[model];
+  const inputCost = (inputTokens / 1000) * p.input;
+  const outputCost = (outputTokens / 1000) * p.output;
+  const totalCost = inputCost + outputCost;
+
+  const quickAdds = [
+    { label: 'Simple Q&A', input: 500, output: 200 },
+    { label: 'Doc Summary', input: 10000, output: 1000 },
+    { label: 'Code Review', input: 25000, output: 3000 },
+    { label: 'Full Doc Analysis', input: 75000, output: 5000 },
+  ];
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Adjust inputs to see how context size affects cost:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.5rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {(Object.keys(pricing) as Array<keyof typeof pricing>).map(key => {
+            const m = pricing[key];
+            return (
+              <button
+                key={key}
+                onClick={() => setModel(key)}
+                style={{
+                  padding: '.35rem .8rem', borderRadius: 6, cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                  border: '1px solid',
+                  background: model === key ? m.color + '1e' : 'var(--bg3)',
+                  borderColor: model === key ? m.color + '55' : 'var(--border)',
+                  color: model === key ? m.color : 'var(--muted)',
+                  transition: 'all .2s',
+                }}
+              >
+                {m.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+          <InteractiveSlider
+            value={inputTokens} min={100} max={200000} step={100}
+            onChange={setInputTokens} label="Input tokens (context)" accent={AC}
+            format={v => v.toLocaleString()}
+          />
+          <InteractiveSlider
+            value={outputTokens} min={50} max={16000} step={50}
+            onChange={setOutputTokens} label="Output tokens (response)" accent={AC}
+            format={v => v.toLocaleString()}
+          />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '.75rem', marginBottom: '1rem' }}>
+          <LiveCounter value={inputTokens} label="Input Tokens" accent={AC} suffix="" />
+          <LiveCounter value={outputTokens} label="Output Tokens" accent={AC} suffix="" />
+          <LiveCounter value={totalCost} label="Total Cost" accent={AC} suffix="¢" decimals={2} />
+        </div>
+
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.75rem' }}>
+          {quickAdds.map((qa, i) => (
+            <button
+              key={i}
+              onClick={() => { setInputTokens(qa.input); setOutputTokens(qa.output); }}
+              style={{
+                padding: '.25rem .6rem', borderRadius: 6, cursor: 'pointer',
+                background: 'var(--bg3)', border: '1px solid var(--border)',
+                color: 'var(--muted)', fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+              }}
+            >
+              {qa.label}: ~{(qa.input + qa.output).toLocaleString()} tok
+            </button>
+          ))}
+        </div>
+
+        <div style={{
+          padding: '.65rem .85rem', borderRadius: 8,
+          background: AC + '08', border: `1px solid ${AC}22`,
+          fontSize: 'var(--font-label)', fontFamily: 'var(--font-mono)', color: 'var(--muted)',
+        }}>
+          <strong style={{ color: AC }}>{p.label}</strong>: ${(p.input / 1000).toFixed(4)}/1K input · ${(p.output / 1000).toFixed(4)}/1K output<br />
+          Total: <strong style={{ color: totalCost > 50 ? '#f87171' : totalCost > 10 ? '#fb923c' : AC }}>
+            ${totalCost.toFixed(4)}
+          </strong> ({inputTokens.toLocaleString()} in + {outputTokens.toLocaleString()} out)
+        </div>
       </div>
     </div>
   );
@@ -235,9 +342,37 @@ export default function Session3Context() {
       <RevealSection>
         <SectionHeader num="03" tag="Session 3 · 1.5 hrs" title="The Context Window" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          Imagine a desk that can only hold <strong style={{ color: 'var(--text)' }}>one page of paper</strong> at a time.
-          You can&apos;t store anything else and look at it later. That&apos;s the context window — the LLM&apos;s entire working memory.
+          Have you ever chatted with an LLM, and after a while it <strong style={{ color: 'var(--text)' }}>forgot what you said earlier?</strong>
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          That&apos;s not a bug. It&apos;s the <strong style={{ color: 'var(--text)' }}>context window</strong>. Imagine a desk that can only hold one page of paper at a time. You can&apos;t store anything else and look at it later. The LLM has no long-term memory — every conversation is a fresh desk, and everything it knows about your task must fit on that desk <em>right now</em>.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          The context window is the <strong style={{ color: 'var(--text)' }}>single biggest practical limitation</strong> of LLMs today. It determines how much you can tell the model, how long conversations can be, how much you pay per query — and it&apos;s why techniques like RAG exist. If you understand only one constraint about LLMs, make it this one.
+        </ConceptBlock>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+          {[
+            { icon: '💸', title: 'Drives your cost', desc: 'APIs charge for every token in + every token out. Bigger context = bigger bills.' },
+            { icon: '🧠', title: 'Limits reasoning', desc: '100-page document? The model can only "see" what fits in its desk at once.' },
+            { icon: '🔧', title: 'Requires strategy', desc: 'You need RAG, summarization, and chunking to work around this limit.' },
+          ].map((r, i) => (
+            <div key={i} style={{
+              padding: '1rem 1.25rem', borderRadius: 12, background: 'var(--bg2)',
+              border: '1px solid var(--border)', transition: 'all .25s',
+            }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = AC + '44'; el.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.borderColor = 'var(--border)'; el.style.transform = 'none'; }}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: '.35rem' }}>{r.icon}</div>
+              <div style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--text)', marginBottom: '.2rem' }}>{r.title}</div>
+              <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{r.desc}</div>
+            </div>
+          ))}
+        </div>
       </RevealSection>
 
       {/* ── The Analogy ── */}
@@ -250,11 +385,11 @@ export default function Session3Context() {
           Each time you chat, it&apos;s a fresh desk. Everything it knows about your task must fit on that desk <strong style={{ color: 'var(--text)' }}>right now</strong>.
         </p>
         <AnimatedPipeline accent={AC} stages={[
-          { icon: '...', label: 'Empty Desk', desc: 'Fresh conversation, 0 tokens' },
-          { icon: '...', label: 'Add Instructions', desc: 'System prompt + rules' },
-          { icon: '...', label: 'Chat Messages', desc: 'Back and forth conversation' },
-          { icon: '...', label: 'Upload Docs', desc: 'PDFs, code, references' },
-          { icon: '...', label: 'Desk Gets Full', desc: 'Lost in the middle!' },
+          { icon: '🪑', label: 'Empty Desk', desc: 'Fresh conversation, 0 tokens' },
+          { icon: '📋', label: 'Add Instructions', desc: 'System prompt + rules' },
+          { icon: '💬', label: 'Chat Messages', desc: 'Back and forth conversation' },
+          { icon: '📎', label: 'Upload Docs', desc: 'PDFs, code, references' },
+          { icon: '⚠️', label: 'Desk Gets Full', desc: 'Lost in the middle!' },
         ]} />
       </RevealSection>
 
@@ -304,6 +439,7 @@ export default function Session3Context() {
         </p>
 
         <ContextCalculator />
+        <CostCalculator />
         <ConversationSimulator />
       </RevealSection>
 
@@ -380,6 +516,24 @@ export default function Session3Context() {
             ))}
           </div>
         </SubSection>
+      </RevealSection>
+
+      {/* ── Common Mistakes ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Common Confusions
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;Bigger context = always better.&rdquo;</strong> Not always. More context means more distractions for the model&apos;s attention. Irrelevant info can make answers <em>worse</em>. Be selective about what you include.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;The model remembers yesterday&apos;s chat.&rdquo;</strong> It doesn&apos;t. LLMs have zero memory between sessions. Each chat is a clean desk. Your conversation history is managed by the app (ChatGPT, Claude), not the model itself.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;I can paste my whole database.&rdquo;</strong> Even with 128K+ context, dumping everything is wasteful and expensive. Use RAG to retrieve only the most relevant 3-5 chunks. Your wallet will thank you.
+          </WarningBox>
+        </div>
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}

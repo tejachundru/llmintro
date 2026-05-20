@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
-  ConceptBlock, KeyPoint, FlowDiagram, InfoBox,
+  ConceptBlock, WarningBox, InfoBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
-  AnimatedPipeline, ToggleCompare, StepBuilder,
+  AnimatedPipeline,
 } from './shared';
 
 const AC = '#ea580c';
@@ -123,9 +123,18 @@ export default function Session4RAG() {
       <RevealSection>
         <SectionHeader num="04" tag="Session 4 · 1.5 hrs" title="Giving LLMs a Memory" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          The context window is limited. <strong style={{ color: 'var(--text)' }}>RAG (Retrieval-Augmented Generation)</strong> is the trick
-          that lets LLMs answer questions about YOUR data without memorizing it all.
+          Ask an LLM &ldquo;What&apos;s our refund policy?&rdquo; and it will <strong style={{ color: 'var(--text)' }}>guess</strong> — convincingly, but wrong. It was trained on the internet, not your company&apos;s documents.
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          <strong style={{ color: 'var(--text)' }}>RAG</strong> fixes this. RAG = Retrieval-Augmented Generation. Fancy name, simple idea: before answering, <strong style={{ color: 'var(--text)' }}>look up the facts in your documents</strong>, then answer based on what you found. It&apos;s like giving the LLM an open-book exam instead of making it guess from memory.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          Without RAG, an LLM can only tell you what it memorized from the internet. With RAG, it can answer questions about <strong style={{ color: 'var(--text)' }}>your</strong> internal docs, <strong style={{ color: 'var(--text)' }}>your</strong> codebase, <strong style={{ color: 'var(--text)' }}>your</strong> customer data — without being retrained. This is how companies build customer support bots, document Q&A, and code assistants that actually work.
+        </ConceptBlock>
       </RevealSection>
 
       {/* ── The Problem ── */}
@@ -154,18 +163,84 @@ export default function Session4RAG() {
         </p>
 
         <RagComparison />
+
+        {/* ── Interactive: Chunking Visualizer ── */}
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '1.5rem', marginBottom: '2.5rem',
+        }}>
+          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+            Interactive: See how text gets chunked before embedding:
+          </div>
+          {(() => {
+            const ChunkVisualizer = () => {
+              const longText = "Our refund policy allows returns within 30 days of purchase with a valid receipt. Electronics must be returned within 14 days. All returned items must be in original packaging. Clearance items are final sale and cannot be returned. Refunds are processed within 5-7 business days after we receive the item. Shipping costs are non-refundable. For defective items, we cover return shipping. Contact support@company.com for RMA numbers before returning any item.";
+              const [chunkSize, setChunkSize] = useState(200);
+              const [overlap, setOverlap] = useState(20);
+              const chunk = (text: string, size: number, ov: number) => {
+                const chunks: string[] = [];
+                let start = 0;
+                while (start < text.length) {
+                  chunks.push(text.slice(start, start + size));
+                  start += size - ov;
+                }
+                return chunks;
+              };
+              const chunks = chunk(longText, chunkSize, Math.floor(chunkSize * overlap / 100));
+              return (
+                <div>
+                  <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <InfoBox accent={AC}>
+                        <strong style={{ color: 'var(--text)' }}>Chunk size:</strong> {chunkSize} chars · <strong style={{ color: 'var(--text)' }}>Overlap:</strong> {overlap}% · <strong style={{ color: 'var(--text)' }}>Chunks:</strong> {chunks.length}
+                      </InfoBox>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', marginBottom: '.25rem' }}>Chunk size</div>
+                      <input type="range" min={50} max={500} value={chunkSize} onChange={e => setChunkSize(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: AC }} aria-label="Chunk size" />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', marginBottom: '.25rem' }}>Overlap %</div>
+                      <input type="range" min={0} max={50} value={overlap} onChange={e => setOverlap(Number(e.target.value))}
+                        style={{ width: '100%', accentColor: AC }} aria-label="Overlap" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem', maxHeight: 240, overflowY: 'auto' }}>
+                    {chunks.map((c, i) => (
+                      <div key={i} style={{
+                        padding: '.5rem .75rem', borderRadius: 6,
+                        background: AC + '08', border: `1px solid ${AC}22`,
+                        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                        color: 'var(--text)', lineHeight: 'var(--lh-snug)',
+                        animation: 'fadeIn .2s ease',
+                      }}>
+                        <span style={{ color: AC, marginRight: '.5rem' }}>#{i + 1}</span>
+                        {c}
+                        <span style={{ color: 'var(--muted)', marginLeft: '.5rem' }}>({c.length} chars)</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            };
+            return <ChunkVisualizer />;
+          })()}
+        </div>
       </RevealSection>
 
       {/* ── RAG Pipeline ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <SubSection title="How RAG Works: The 6-Step Pipeline" accent={AC}>
           <AnimatedPipeline accent={AC} stages={[
-            { icon: '...', label: 'Load Docs', desc: 'PDFs, web pages, databases' },
-            { icon: '...', label: 'Chunk', desc: 'Cut into ~500 token pieces' },
-            { icon: '...', label: 'Embed', desc: 'Convert to number vectors' },
-            { icon: '...', label: 'Store', desc: 'Save in vector database' },
-            { icon: '...', label: 'Retrieve', desc: 'Find relevant chunks' },
-            { icon: '...', label: 'Generate', desc: 'Answer from retrieved facts' },
+            { icon: '📄', label: 'Load Docs', desc: 'PDFs, web pages, databases' },
+            { icon: '✂️', label: 'Chunk', desc: 'Cut into ~500 token pieces' },
+            { icon: '🔢', label: 'Embed', desc: 'Convert to number vectors' },
+            { icon: '💾', label: 'Store', desc: 'Save in vector database' },
+            { icon: '🔎', label: 'Retrieve', desc: 'Find relevant chunks' },
+            { icon: '🤖', label: 'Generate', desc: 'Answer from retrieved facts' },
           ]} />
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
@@ -238,6 +313,24 @@ export default function Session4RAG() {
             ))}
           </div>
         </SubSection>
+      </RevealSection>
+
+      {/* ── Common Mistakes ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Common Confusions
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;RAG replaces fine-tuning.&rdquo;</strong> They solve different problems. RAG is for facts (policies, docs, data). Fine-tuning is for behavior (tone, style, format). Use RAG for &ldquo;what&rdquo; and fine-tuning for &ldquo;how.&rdquo;
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;More chunks = better answer.&rdquo;</strong> Nope. Retrieving 20 chunks fills the context with noise. Top-3 to Top-5 is the sweet spot. More chunks = more distraction for the model.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;Embeddings understand meaning.&rdquo;</strong> They don&apos;t. They just map similar words to nearby numbers. &ldquo;Heart attack&rdquo; and &ldquo;cardiac arrest&rdquo; are nearby because they appear in similar sentences on the internet, not because the model knows what they are.
+          </WarningBox>
+        </div>
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}

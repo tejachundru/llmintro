@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
-  ConceptBlock, KeyPoint, FlowDiagram, InfoBox,
+  ConceptBlock, FlowDiagram, InfoBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   StepBuilder, AnimatedPipeline,
+  WarningBox,
 } from './shared';
 
 const AC = '#0891b2';
@@ -211,9 +212,18 @@ export default function Session6MCP() {
       <RevealSection>
         <SectionHeader num="06" tag="Session 6 · 1 hr" title="Giving the LLM Hands" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          An LLM can <em>talk</em> about anything, but it can&apos;t <em>do</em> anything. It can tell you how to send an email, but it can&apos;t click &ldquo;send.&rdquo;
-          <strong style={{ color: 'var(--text)' }}> MCP</strong> (Model Context Protocol) gives the LLM actual hands.
+          So far, the LLM can only <em>talk</em>. You ask, it answers. But what if it could <strong style={{ color: 'var(--text)' }}>actually do things</strong>? Send emails, read your calendar, search your files, book meetings?
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          <strong style={{ color: 'var(--text)' }}>MCP (Model Context Protocol)</strong> is the standard that gives LLMs hands. Instead of just telling you how to send an email, the LLM can call a tool, send it, and tell you it&apos;s done. This is the difference between an advisor and an assistant.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          MCP is the <strong style={{ color: 'var(--text)' }}>biggest shift after ChatGPT</strong> itself. Before MCP, every AI-to-tool integration was custom-built. MCP is an open standard — build one server, any AI can use it. This is how AI goes from chatbots to actual assistants that do real work across your tools.
+        </ConceptBlock>
       </RevealSection>
 
       {/* ── The Analogy ── */}
@@ -303,6 +313,69 @@ export default function Session6MCP() {
         </p>
 
         <McpToolRunner />
+
+        {/* ── Interactive: Tool Decision Simulator ── */}
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '1.5rem',
+        }}>
+          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+            Interactive: See which tool the LLM would call for each request:
+          </div>
+          {(() => {
+            const ToolChooser = () => {
+              const requests = [
+                { text: 'Find the Q2 report in Drive', tool: 'search_files', icon: '🔍', server: 'Google Drive', color: '#1863dc' },
+                { text: 'Schedule a meeting for tomorrow at 3pm', tool: 'create_event', icon: '📅', server: 'Calendar', color: '#059669' },
+                { text: 'What did Ravi say about the proposal?', tool: 'search_emails', icon: '✉️', server: 'Gmail', color: '#e11d48' },
+                { text: 'Send a follow-up to the client', tool: 'send_email', icon: '📨', server: 'Gmail', color: '#e11d48' },
+                { text: 'Read the latest sales PDF', tool: 'read_file', icon: '📖', server: 'Google Drive', color: '#1863dc' },
+              ];
+              const [activeIdx, setActiveIdx] = useState<number | null>(null);
+              return (
+                <div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem', marginBottom: '1rem' }}>
+                    {requests.map((req, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveIdx(activeIdx === i ? null : i)}
+                        style={{
+                          padding: '.5rem .75rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)',
+                          border: '1px solid',
+                          background: activeIdx === i ? req.color + '1e' : 'var(--bg3)',
+                          borderColor: activeIdx === i ? req.color + '55' : 'var(--border)',
+                          color: activeIdx === i ? req.color : 'var(--text)',
+                          transition: 'all .2s',
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>{req.icon} &ldquo;{req.text}&rdquo;</span>
+                          <span style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>{activeIdx === i ? '▼' : '▶'}</span>
+                        </div>
+                        {activeIdx === i && (
+                          <div style={{
+                            marginTop: '.5rem', padding: '.5rem .65rem', borderRadius: 6,
+                            background: req.color + '08', border: `1px solid ${req.color}33`,
+                            fontSize: 'var(--font-micro)', color: req.color, lineHeight: 'var(--lh-snug)',
+                            animation: 'fadeIn .2s ease',
+                          }}>
+                            <div>🤖 LLM decides → call <strong style={{ color: 'var(--text)' }}>{req.tool}</strong></div>
+                            <div style={{ color: 'var(--muted)', marginTop: '.15rem' }}>Server: {req.server} · Tool: {req.tool}</div>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', textAlign: 'center' }}>
+                    The LLM analyzes the request and picks the right tool — just like you choose the right app for the job
+                  </div>
+                </div>
+              );
+            };
+            return <ToolChooser />;
+          })()}
+        </div>
       </RevealSection>
 
       {/* ── Multi-Tool Chaining ── */}
@@ -321,12 +394,12 @@ export default function Session6MCP() {
           ]} />
 
           <AnimatedPipeline accent={AC} stages={[
-            { icon: '...', label: 'You Ask', desc: 'In plain English' },
-            { icon: '...', label: 'LLM Plans', desc: 'Decides tool order' },
-            { icon: '...', label: 'Search', desc: 'Finds relevant data' },
-            { icon: '...', label: 'Read', desc: 'Gets the content' },
-            { icon: '...', label: 'Draft', desc: 'Writes the reply' },
-            { icon: '...', label: 'Send', desc: 'Completes the action' },
+            { icon: '💬', label: 'You Ask', desc: 'In plain English' },
+            { icon: '🧠', label: 'LLM Plans', desc: 'Decides tool order' },
+            { icon: '🔍', label: 'Search', desc: 'Finds relevant data' },
+            { icon: '📖', label: 'Read', desc: 'Gets the content' },
+            { icon: '✍️', label: 'Draft', desc: 'Writes the reply' },
+            { icon: '📨', label: 'Send', desc: 'Completes the action' },
           ]} />
         </SubSection>
       </RevealSection>
@@ -368,6 +441,24 @@ export default function Session6MCP() {
             The model chooses when to call tools; the application can attach resources proactively.
           </InfoBox>
         </SubSection>
+      </RevealSection>
+
+      {/* ── Common Mistakes ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Common Confusions
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;The LLM can do anything if I give it enough tools.&rdquo;</strong> Not quite. The LLM can only use tools YOU explicitly give it. It can&apos;t discover new tools or install software. You control the toolbox.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;MCP is the same as plugin APIs.&rdquo;</strong> MCP is different: it&apos;s an open standard, not a proprietary format. Build one MCP server — any MCP-compatible client (Claude, VS Code, custom apps) can use it. Like how USB-C works across devices.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;The LLM will call tools correctly every time.&rdquo;</strong> It can make mistakes: wrong parameters, wrong tool for the job. Always review tool calls before they execute on sensitive data. Trust but verify.
+          </WarningBox>
+        </div>
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}

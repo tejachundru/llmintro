@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
-  ConceptBlock, KeyPoint, WarningBox,
-  RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
-  InteractiveSlider, StepBuilder, AnimatedPipeline,
+  WarningBox,
+  RecapBox, PracticeQuestions, QuickSummary, MentalModel,
+  StepBuilder, AnimatedPipeline,
+  ConceptBlock,
 } from './shared';
 
 const AC = '#e11d48';
@@ -193,9 +194,18 @@ export default function Session5Prompting() {
       <RevealSection>
         <SectionHeader num="05" tag="Session 5 · 1.5 hrs" title="The Art of Prompting" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
-          The same model can produce garbage or gold depending on <strong style={{ color: 'var(--text)' }}>how you ask</strong>.
-          Prompt engineering is the skill of crafting inputs that reliably produce great outputs.
+          Here&apos;s a secret: <strong style={{ color: 'var(--text)' }}>the same LLM can produce garbage or gold</strong> — it all depends on how you ask.
         </p>
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          &ldquo;Write something about AI&rdquo; → generic fluff. &ldquo;You are a senior ML engineer. Explain transformers to a beginner in 3 paragraphs with an analogy.&rdquo; → clear, useful, on-target. <strong style={{ color: 'var(--text)' }}>Prompt engineering</strong> is the skill of crafting inputs that reliably produce great outputs. And it&apos;s easier than you think.
+        </p>
+      </RevealSection>
+
+      {/* ── Why This Matters ── */}
+      <RevealSection style={{ marginBottom: '2rem' }}>
+        <ConceptBlock title="Why should you care?" accent={AC}>
+          Prompting is the <strong style={{ color: 'var(--text)' }}>#1 skill</strong> for getting value from LLMs. It doesn&apos;t require coding. It doesn&apos;t require math. It just requires clear thinking and a few techniques. A well-written prompt can be the difference between &ldquo;this AI is useless&rdquo; and &ldquo;this AI just saved me 2 hours.&rdquo;
+        </ConceptBlock>
       </RevealSection>
 
       {/* ── The Analogy ── */}
@@ -209,10 +219,10 @@ export default function Session5Prompting() {
           <strong style={{ color: 'var(--text)' }}> Be specific, structured, and clear.</strong>
         </p>
         <AnimatedPipeline accent={AC} stages={[
-          { icon: '...', label: 'Bad Prompt', desc: '"Write something about AI"' },
-          { icon: '...', label: 'Vague Output', desc: 'Generic, unfocused text' },
-          { icon: '...', label: 'Good Prompt', desc: 'Role + context + format + example' },
-          { icon: '...', label: 'Great Output', desc: 'Specific, useful, on-target' },
+          { icon: '❌', label: 'Bad Prompt', desc: '"Write something about AI"' },
+          { icon: '🤷', label: 'Vague Output', desc: 'Generic, unfocused text' },
+          { icon: '✅', label: 'Good Prompt', desc: 'Role + context + format + example' },
+          { icon: '🎯', label: 'Great Output', desc: 'Specific, useful, on-target' },
         ]} />
       </RevealSection>
 
@@ -227,6 +237,88 @@ export default function Session5Prompting() {
 
         <PromptBuilder />
         <TemperatureDemo />
+
+        {/* ── Interactive: Prompt Quality Analyzer ── */}
+        <div style={{
+          background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+          padding: '1.5rem', marginBottom: '2.5rem',
+        }}>
+          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+            Interactive: Rate your prompt structure — see how each element affects quality:
+          </div>
+          {(() => {
+            const PromptAnalyzer = () => {
+              const [hasRole, setHasRole] = useState(true);
+              const [hasContext, setHasContext] = useState(true);
+              const [hasFormat, setHasFormat] = useState(true);
+              const [hasExamples, setHasExamples] = useState(false);
+              const [hasCoT, setHasCoT] = useState(false);
+
+              const score = [hasRole, hasContext, hasFormat, hasExamples, hasCoT].filter(Boolean).length / 5 * 100;
+              const getLabel = (s: number) => s >= 80 ? '🎯 Excellent' : s >= 60 ? '👍 Good' : s >= 40 ? '📝 Needs work' : '❌ Weak';
+
+              return (
+                <div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '.5rem', marginBottom: '1.25rem' }}>
+                    {[
+                      { label: '✅ Role/Persona', key: hasRole, set: setHasRole, desc: '"You are a senior engineer"' },
+                      { label: '📋 Context', key: hasContext, set: setHasContext, desc: 'Relevant background info' },
+                      { label: '📐 Output Format', key: hasFormat, set: setHasFormat, desc: '"Respond as JSON"' },
+                      { label: '📝 Few-shot Examples', key: hasExamples, set: setHasExamples, desc: 'Show 2-3 examples' },
+                      { label: '🧠 Chain of Thought', key: hasCoT, set: setHasCoT, desc: '"Think step by step"' },
+                    ].map((item, i) => (
+                      <button
+                        key={i}
+                        onClick={() => item.set(!item.key)}
+                        style={{
+                          padding: '.5rem .75rem', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                          fontFamily: 'var(--font-sans)', fontSize: 'var(--font-caption)',
+                          border: '1px solid',
+                          background: item.key ? AC + '1e' : 'var(--bg3)',
+                          borderColor: item.key ? AC + '55' : 'var(--border)',
+                          color: item.key ? AC : 'var(--muted)',
+                          transition: 'all .2s',
+                        }}
+                      >
+                        <div style={{ fontWeight: item.key ? 600 : 400, marginBottom: '.15rem' }}>{item.label}</div>
+                        <div style={{ fontSize: 'var(--font-micro)', opacity: 0.7 }}>{item.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div style={{
+                    padding: '1rem', borderRadius: 10,
+                    background: `linear-gradient(135deg, ${AC}15, ${AC}05)`,
+                    border: `1px solid ${AC}33`, textAlign: 'center',
+                  }}>
+                    <div style={{
+                      fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 600,
+                      fontFamily: 'var(--font-mono)', color: AC,
+                    }}>
+                      {score.toFixed(0)}%
+                    </div>
+                    <div style={{ fontSize: 'var(--font-body)', color: 'var(--text)', marginTop: '.25rem' }}>
+                      {getLabel(score)}
+                    </div>
+                    <div style={{
+                      marginTop: '.75rem', height: 6, background: 'var(--bg3)', borderRadius: 3, overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        height: '100%', width: score + '%',
+                        background: `linear-gradient(90deg, ${AC}88, ${AC})`,
+                        borderRadius: 3, transition: 'width .4s ease',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', marginTop: '.5rem', fontFamily: 'var(--font-mono)' }}>
+                      A great prompt has 4-5 of these elements
+                    </div>
+                  </div>
+                </div>
+              );
+            };
+            return <PromptAnalyzer />;
+          })()}
+        </div>
       </RevealSection>
 
       {/* ── Prompt Anatomy ── */}
@@ -267,6 +359,24 @@ export default function Session5Prompting() {
             <strong style={{ color: 'var(--text)' }}> Be specific about role, context, format, and constraints.</strong>
           </WarningBox>
         </SubSection>
+      </RevealSection>
+
+      {/* ── Common Mistakes ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Common Confusions
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;Longer prompt = better answer.&rdquo;</strong> Usually the opposite. Be concise. Every unnecessary word dilutes the instruction. If your prompt has 3 paragraphs of rambling, the model doesn&apos;t know what to focus on.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;Temperature 0 = always right.&rdquo;</strong> Temperature 0 means deterministic (same answer every time), not correct. The model can be confidently wrong. Temperature adds helpful randomness for creative tasks.
+          </WarningBox>
+          <WarningBox accent={AC}>
+            <strong>&ldquo;The model follows instructions perfectly.&rdquo;</strong> It tries, but it can miss subtle instructions, especially if buried in the middle. Important instructions should go at the start AND be repeated at the end.
+          </WarningBox>
+        </div>
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
