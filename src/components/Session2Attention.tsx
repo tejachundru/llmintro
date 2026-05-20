@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  AnalogyGrid, DemoCard, RevealSection, SectionHeader, SubSection,
+  RevealSection, SectionHeader, SubSection,
   ConceptBlock, InfoBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   StepBuilder, AnimatedPipeline,
@@ -67,62 +67,67 @@ function drawAttention(canvas: HTMLCanvasElement, fromIdx: number) {
   });
 }
 
-/* ─── Attention Heat Map ─── */
+/* ─── Attention Heat Map (inline demo) ─── */
 
 function AttentionHeatMap() {
   const [hoverCol, setHoverCol] = useState<number | null>(null);
 
   return (
-    <div style={{ background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12, padding: '1.25rem', marginBottom: '1rem' }}>
-      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', marginBottom: '.75rem' }}>
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
         Hover a cell to see attention strength (darker = stronger)
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: '.5rem' }}>
-        <div style={{ width: 50, fontSize: 'var(--font-mono)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)' }} />
-        {SENTENCE.map((w, j) => (
-          <div key={j} style={{
-            width: 60, textAlign: 'center', fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)',
-            color: hoverCol === j ? AC : 'var(--muted)', transition: 'color .2s',
-          }}>{w}</div>
-        ))}
-      </div>
-      {SENTENCE.map((rowWord, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 2 }}>
-          <div style={{
-            width: 50, fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--ink)',
-            textAlign: 'right', paddingRight: 8,
-          }}>{rowWord}</div>
-          {SENTENCE.map((_, j) => {
-            const w = ATTENTION[i][j];
-            return (
-              <div
-                key={j}
-                onMouseEnter={() => setHoverCol(j)}
-                onMouseLeave={() => setHoverCol(null)}
-                style={{
-                  width: 60, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: `rgba(124,58,237,${w * 1.5})`,
-                  border: hoverCol === j ? '1px solid rgba(124,58,237,0.8)' : '1px solid var(--border)',
-                  fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-micro)',
-                  color: w > 0.3 ? '#fff' : 'var(--muted)',
-                  cursor: 'pointer', transition: 'all .2s',
-                  transform: hoverCol === j ? 'scale(1.08)' : 'scale(1)',
-                }}
-              >
-                {(w * 100).toFixed(0)}%
-              </div>
-            );
-          })}
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.25rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: '.5rem' }}>
+          <div style={{ width: 50, fontSize: 'var(--font-mono)', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }} />
+          {SENTENCE.map((w, j) => (
+            <div key={j} style={{
+              width: 60, textAlign: 'center', fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)',
+              color: hoverCol === j ? AC : 'var(--muted)', transition: 'color .2s',
+            }}>{w}</div>
+          ))}
         </div>
-      ))}
-      <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.5rem' }}>
-        Each cell shows how much the row word "attends to" the column word
+        {SENTENCE.map((rowWord, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 2 }}>
+            <div style={{
+              width: 50, fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--text)',
+              textAlign: 'right', paddingRight: 8,
+            }}>{rowWord}</div>
+            {SENTENCE.map((_, j) => {
+              const w = ATTENTION[i][j];
+              return (
+                <div
+                  key={j}
+                  onMouseEnter={() => setHoverCol(j)}
+                  onMouseLeave={() => setHoverCol(null)}
+                  style={{
+                    width: 60, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: `rgba(124,58,237,${w * 1.5})`,
+                    border: hoverCol === j ? '1px solid rgba(124,58,237,0.8)' : '1px solid var(--border)',
+                    fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
+                    color: w > 0.3 ? '#fff' : 'var(--muted)',
+                    cursor: 'pointer', transition: 'all .2s',
+                    transform: hoverCol === j ? 'scale(1.08)' : 'scale(1)',
+                  }}
+                >
+                  {(w * 100).toFixed(0)}%
+                </div>
+              );
+            })}
+          </div>
+        ))}
+        <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.5rem' }}>
+          Each cell shows how much the row word &ldquo;attends to&rdquo; the column word
+        </div>
       </div>
     </div>
   );
 }
 
-/* ─── QKV Interactive Demo ─── */
+/* ─── QKV Interactive Demo (inline) ─── */
 
 function QKVDemo() {
   const [word, setWord] = useState('cat');
@@ -145,77 +150,84 @@ function QKVDemo() {
   };
 
   return (
-    <div style={{ background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12, padding: '1.25rem' }}>
-      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', marginBottom: '.75rem' }}>
-        Click a word to see its Q, K, V and what it matches with:
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Click a word to see its Query, Key, Value vectors and attention scores:
       </div>
-      <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        {words.map((w) => (
-          <button
-            key={w}
-            onClick={() => setWord(w)}
-            style={{
-              padding: '.35rem .75rem', borderRadius: 6, fontSize: 'var(--font-caption)',
-              background: word === w ? AC + '1e' : 'var(--soft-stone)',
-              border: `1px solid ${word === w ? AC + '55' : 'var(--border)'}`,
-              color: word === w ? AC : 'var(--muted)',
-              cursor: 'pointer', fontFamily: 'var(--ff-mono)', fontWeight: word === w ? 600 : 400,
-            }}
-          >
-            {w}
-          </button>
-        ))}
-      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.25rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {words.map((w) => (
+            <button
+              key={w}
+              onClick={() => setWord(w)}
+              style={{
+                padding: '.35rem .75rem', borderRadius: 6, fontSize: 'var(--font-caption)',
+                background: word === w ? AC + '1e' : 'var(--bg3)',
+                border: `1px solid ${word === w ? AC + '55' : 'var(--border)'}`,
+                color: word === w ? AC : 'var(--muted)',
+                cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: word === w ? 600 : 400,
+              }}
+            >
+              {w}
+            </button>
+          ))}
+        </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.5rem', marginBottom: '1rem' }}>
-        <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(24,99,220,.1)', border: '1px solid rgba(24,99,220,.3)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent)', fontFamily: 'var(--ff-mono)', marginBottom: '.25rem' }}>Query (Q)</div>
-          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
-            [{d.q.map((v, i) => <span key={i} style={{ color: 'var(--accent)' }}>{v.toFixed(1)}{i < d.q.length - 1 ? ', ' : ''}</span>)}]
-          </div>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>"What am I looking for?"</div>
-        </div>
-        <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(124,58,237,.1)', border: '1px solid rgba(124,58,237,.3)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent2)', fontFamily: 'var(--ff-mono)', marginBottom: '.25rem' }}>Key (K)</div>
-          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
-            [{d.k.map((v, i) => <span key={i} style={{ color: 'var(--accent2)' }}>{v.toFixed(1)}{i < d.k.length - 1 ? ', ' : ''}</span>)}]
-          </div>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>"What do I contain?"</div>
-        </div>
-        <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(5,150,105,.1)', border: '1px solid rgba(5,150,105,.3)', textAlign: 'center' }}>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent3)', fontFamily: 'var(--ff-mono)', marginBottom: '.25rem' }}>Value (V)</div>
-          <div style={{ fontSize: 'var(--font-caption)', color: 'var(--ink)', fontFamily: 'var(--ff-mono)' }}>
-            [{d.v.map((v, i) => <span key={i} style={{ color: 'var(--accent3)' }}>{v.toFixed(1)}{i < d.v.length - 1 ? ', ' : ''}</span>)}]
-          </div>
-          <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>"What info do I carry?"</div>
-        </div>
-      </div>
-
-      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', marginBottom: '.5rem' }}>
-        "{word}" attention scores (Q × K):
-      </div>
-      <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
-        {words.map((w) => {
-          const score = dotWith(w);
-          const maxScore = Math.max(...words.map(dotWith));
-          return (
-            <div key={w} style={{
-              padding: '.4rem .65rem', borderRadius: 6, textAlign: 'center', flex: 1, minWidth: 60,
-              background: `rgba(124,58,237,${(score / maxScore) * 0.4})`,
-              border: `1px solid rgba(124,58,237,${(score / maxScore) * 0.6})`,
-              fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-caption)',
-            }}>
-              <div style={{ color: 'var(--ink)' }}>{w}</div>
-              <div style={{ color: score > 0.3 ? AC : 'var(--muted)', fontSize: 'var(--font-micro)' }}>{(score * 100).toFixed(0)}%</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '.5rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(24,99,220,.1)', border: '1px solid rgba(24,99,220,.3)', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent)', fontFamily: 'var(--font-mono)', marginBottom: '.25rem' }}>Query (Q)</div>
+            <div style={{ fontSize: 'var(--font-caption)', color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
+              [{d.q.map((v, i) => <span key={i} style={{ color: 'var(--accent)' }}>{v.toFixed(1)}{i < d.q.length - 1 ? ', ' : ''}</span>)}]
             </div>
-          );
-        })}
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>&ldquo;What am I looking for?&rdquo;</div>
+          </div>
+          <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(124,58,237,.1)', border: '1px solid rgba(124,58,237,.3)', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent2)', fontFamily: 'var(--font-mono)', marginBottom: '.25rem' }}>Key (K)</div>
+            <div style={{ fontSize: 'var(--font-caption)', color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
+              [{d.k.map((v, i) => <span key={i} style={{ color: 'var(--accent2)' }}>{v.toFixed(1)}{i < d.k.length - 1 ? ', ' : ''}</span>)}]
+            </div>
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>&ldquo;What do I contain?&rdquo;</div>
+          </div>
+          <div style={{ padding: '.65rem', borderRadius: 8, background: 'rgba(5,150,105,.1)', border: '1px solid rgba(5,150,105,.3)', textAlign: 'center' }}>
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--accent3)', fontFamily: 'var(--font-mono)', marginBottom: '.25rem' }}>Value (V)</div>
+            <div style={{ fontSize: 'var(--font-caption)', color: 'var(--text)', fontFamily: 'var(--font-mono)' }}>
+              [{d.v.map((v, i) => <span key={i} style={{ color: 'var(--accent3)' }}>{v.toFixed(1)}{i < d.v.length - 1 ? ', ' : ''}</span>)}]
+            </div>
+            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>&ldquo;What info do I carry?&rdquo;</div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.5rem' }}>
+          &ldquo;{word}&rdquo; attention scores (Q &times; K):
+        </div>
+        <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+          {words.map((w) => {
+            const score = dotWith(w);
+            const maxScore = Math.max(...words.map(dotWith));
+            return (
+              <div key={w} style={{
+                padding: '.4rem .65rem', borderRadius: 6, textAlign: 'center', flex: 1, minWidth: 60,
+                background: `rgba(124,58,237,${(score / maxScore) * 0.4})`,
+                border: `1px solid rgba(124,58,237,${(score / maxScore) * 0.6})`,
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)',
+              }}>
+                <div style={{ color: 'var(--text)' }}>{w}</div>
+                <div style={{ color: score > 0.3 ? AC : 'var(--muted)', fontSize: 'var(--font-micro)' }}>{(score * 100).toFixed(0)}%</div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
-export default function Session2Attention() {
+/* ─── Attention Lines Canvas Demo (inline) ─── */
+
+function AttentionLinesDemo() {
   const [selected, setSelected] = useState(2);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -230,178 +242,196 @@ export default function Session2Attention() {
   }, [selected]);
 
   return (
-    <section id="s2" style={{ maxWidth: 900, margin: '0 auto', padding: '5rem 2rem' }}>
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Click a word — see how attention flows to every other word:
+      </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.25rem',
+      }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginBottom: '1rem' }}>
+          {SENTENCE.map((word, i) => (
+            <button
+              key={i}
+              onClick={() => setSelected(i)}
+              style={{
+                padding: '.4rem .9rem', borderRadius: 8,
+                background: selected === i ? 'rgba(124,58,237,.15)' : 'var(--bg3)',
+                border: selected === i ? '1px solid var(--accent2)' : '1px solid var(--border)',
+                color: selected === i ? 'var(--accent2)' : 'var(--text)',
+                fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
+                cursor: 'pointer', transition: 'all .2s',
+              }}
+            >
+              {word}
+            </button>
+          ))}
+        </div>
+        <div style={{ borderRadius: 12, background: 'var(--bg3)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <canvas ref={canvasRef} style={{ display: 'block', width: '100%' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Session2Attention() {
+  return (
+    <section id="s2" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
+      {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="02" tag="Session 2 · 1.5 hrs" title="How LLMs Understand Words" accentColor={AC} borderColor="rgba(124,58,237,0.3)" />
-        <p style={{ color: 'var(--muted)', maxWidth: 600, marginBottom: '2.5rem', fontSize: 'var(--font-body)' }}>
-          How does the model know "it" refers to "the cat" and not "the mat"? The answer is <strong style={{ color: 'var(--ink)' }}>attention</strong> —
+        <SectionHeader num="02" tag="Session 2 · 1.5 hrs" title="How LLMs Understand Words" accentColor={AC} borderColor={`${AC}44`} />
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          How does the model know &ldquo;it&rdquo; refers to &ldquo;the cat&rdquo; and not &ldquo;the mat&rdquo;? The answer is <strong style={{ color: 'var(--text)' }}>attention</strong> —
           the mechanism that lets every word look at every other word.
         </p>
       </RevealSection>
 
-      {/* ── Real-World Analogy ── */}
-      <RevealSection>
-        <SubSection title="The Spotlight Analogy" accent={AC}>
-          <ConceptBlock title="Attention = a Spotlight" accent={AC}>
-            Imagine you're in a dark room full of people. Someone says "The cat sat on the mat."
-            Your brain connects "cat" with "sat" (the cat is doing the action).
-            <strong style={{ color: 'var(--ink)' }}>Attention is the model's spotlight</strong> — it shines brighter on important connections.
-          </ConceptBlock>
-
-          <AnimatedPipeline accent={AC} stages={[
-            { icon: '📝', label: 'Input Words', desc: 'The cat sat on the mat' },
-            { icon: '🔦', label: 'Check All Pairs', desc: 'Every word x every word' },
-            { icon: '📊', label: 'Score Relevance', desc: 'How important is this pair?' },
-            { icon: '🎯', label: 'Blend Info', desc: 'Borrow info from relevant words' },
-          ]} />
-        </SubSection>
+      {/* ── The Analogy ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          The Spotlight Analogy
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          Imagine you&apos;re in a dark room full of people. Someone says &ldquo;The cat sat on the mat.&rdquo;
+          Your brain instantly connects &ldquo;cat&rdquo; with &ldquo;sat&rdquo; — the cat is doing the action.
+          <strong style={{ color: 'var(--text)' }}> Attention is the model&apos;s spotlight</strong> — it shines brighter on important connections.
+        </p>
+        <AnimatedPipeline accent={AC} stages={[
+          { icon: '...', label: 'Input Words', desc: 'The cat sat on the mat' },
+          { icon: '...', label: 'Check All Pairs', desc: 'Every word × every word' },
+          { icon: '...', label: 'Score Relevance', desc: 'How important is this pair?' },
+          { icon: '...', label: 'Blend Info', desc: 'Borrow info from relevant words' },
+        ]} />
       </RevealSection>
 
-      {/* ── The Problem Before ── */}
-      <RevealSection>
-        <SubSection title="The Old Way: RNNs (Bad Memory)" accent={AC}>
-          <ConceptBlock title="Before transformers, models forgot early words" accent={AC}>
-            Old models (RNNs) read text left-to-right, one word at a time. They had a tiny memory that got passed along.
-            By the end of a paragraph, they'd <strong style={{ color: 'var(--ink)' }}>forgotten the beginning</strong>.
-          </ConceptBlock>
-
-          <BeforeAfter
-            accent={AC}
-            before="RNN: The → cat → sat → on → the → mat → (forgets 'cat' by now)"
-            after="Transformer: ALL words at once, connected directly — no forgetting!"
-          />
-        </SubSection>
+      {/* ── The Old Way ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          The Old Way: RNNs (Bad Memory)
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          Old models (RNNs) read text left-to-right, one word at a time. They had a tiny memory that got passed along.
+          By the end of a paragraph, they&apos;d <strong style={{ color: 'var(--text)' }}>forgotten the beginning</strong>.
+        </p>
+        <BeforeAfter
+          accent={AC}
+          before="RNN: The → cat → sat → on → the → mat → (forgets 'cat' by now)"
+          after="Transformer: ALL words at once, connected directly — no forgetting!"
+        />
       </RevealSection>
 
-      {/* ── Self-Attention ── */}
+      {/* ── Playground: interactive demos unwrapped ── */}
       <RevealSection>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
+          The Playground
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', marginBottom: '2rem', letterSpacing: 'var(--ls-wide)', textTransform: 'uppercase' }}>
+          Explore attention, QKV, and connections interactively
+        </p>
+
+        <AttentionHeatMap />
+        <QKVDemo />
+        <AttentionLinesDemo />
+      </RevealSection>
+
+      {/* ── Self-Attention Explained ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <SubSection title="Self-Attention: Every Word Checks Every Word" accent={AC}>
           <ConceptBlock title="Q, K, V = The Library System" accent={AC}>
             Every word creates 3 things:
             <br /><br />
-            <strong style={{ color: 'var(--ink)' }}>Query (Q)</strong> = "What am I looking for?"<br />
-            <strong style={{ color: 'var(--ink)' }}>Key (K)</strong> = "What do I contain?"<br />
-            <strong style={{ color: 'var(--ink)' }}>Value (V)</strong> = "What info do I carry?"
+            <strong style={{ color: 'var(--text)' }}>Query (Q)</strong> = &ldquo;What am I looking for?&rdquo;<br />
+            <strong style={{ color: 'var(--text)' }}>Key (K)</strong> = &ldquo;What do I contain?&rdquo;<br />
+            <strong style={{ color: 'var(--text)' }}>Value (V)</strong> = &ldquo;What info do I carry?&rdquo;
             <br /><br />
-            "cat" creates a Query for "things that sit." "mat" has a Key that matches. Result: cat pays attention to mat.
+            &ldquo;cat&rdquo; creates a Query for &ldquo;things that sit.&rdquo; &ldquo;mat&rdquo; has a Key that matches. Result: cat pays attention to mat.
           </ConceptBlock>
-
-          <DemoCard label="Interactive Demo" title="Click Words to See Q, K, V in Action" desc="See how Query matches with Keys to produce attention scores.">
-            <QKVDemo />
-          </DemoCard>
 
           <StepBuilder accent={AC} steps={[
             { label: 'Step 1: Each word gets embedded as a number vector', detail: 'Every word is converted from text to a list of numbers (its embedding). Similar words have similar number patterns.' },
             { label: 'Step 2: Create Query, Key, Value vectors', detail: 'The embedding is multiplied by 3 different matrices (Wq, Wk, Wv) to produce Q, K, V. These are learned during training.' },
-            { label: 'Step 3: Compute attention scores (Q × K)', detail: 'Every word\'s Query is dotted with every other word\'s Key. Higher dot product = more relevant. This is where "cat" finds "mat."' },
-            { label: 'Step 4: Softmax turns scores into percentages', detail: 'Raw scores can be any number. Softmax converts them to probabilities that sum to 100%. Now we have "attention weights."' },
+            { label: 'Step 3: Compute attention scores (Q × K)', detail: 'Every word\'s Query is dotted with every other word\'s Key. Higher dot product = more relevant.' },
+            { label: 'Step 4: Softmax turns scores into percentages', detail: 'Raw scores can be any number. Softmax converts them to probabilities that sum to 100%.' },
             { label: 'Step 5: Blend Values using attention weights', detail: 'Each word\'s output is a weighted blend of all Value vectors. "cat" ends up carrying info from "sat" and "mat" too.' },
           ]} />
 
           <InfoBox accent={AC}>
-            <strong style={{ color: 'var(--ink)' }}>The key insight:</strong> Every word gets a "personalized blend" of every other word's information.
-            "Cat" knows it's connected to "sat" (the action) and "mat" (the location).
+            <strong style={{ color: 'var(--text)' }}>The key insight:</strong> Every word gets a &ldquo;personalized blend&rdquo; of every other word&apos;s information.
+            &ldquo;Cat&rdquo; knows it&apos;s connected to &ldquo;sat&rdquo; (the action) and &ldquo;mat&rdquo; (the location).
             All computed in one parallel step.
           </InfoBox>
         </SubSection>
       </RevealSection>
 
       {/* ── Multi-Head Attention ── */}
-      <RevealSection>
-        <SubSection title="Multi-Head Attention: Many Spotlights at Once" accent={AC}>
-          <AnalogyGrid items={[
-            { emoji: '🔦', title: 'One spotlight is not enough', desc: 'A single attention head learns one relationship type. But language has many: grammar, meaning, position, coreference.' },
-            { emoji: '🔭🔬🔍', title: 'Multiple heads = multiple perspectives', desc: 'Head 1 tracks grammar. Head 2 tracks meaning. Head 3 tracks position. They run in parallel, then combine.' },
-            { emoji: '🧅', title: 'Layers build depth', desc: 'Layer 1: simple word patterns. Layer 5: sentence structure. Layer 20: meaning. Layer 96: abstract reasoning.' },
-          ]} />
-        </SubSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Many Spotlights at Once
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          A single attention head learns one relationship type. But language has many: grammar, meaning, position, coreference.
+          Multiple heads run in parallel, then combine.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          {[
+            { title: 'Multiple Perspectives', desc: 'Head 1 tracks grammar. Head 2 tracks meaning. Head 3 tracks position. They run in parallel, then combine.' },
+            { title: 'Layers Build Depth', desc: 'Layer 1: simple word patterns. Layer 5: sentence structure. Layer 20: meaning. Layer 96: abstract reasoning.' },
+            { title: 'Parallel Processing', desc: 'Unlike RNNs that read one word at a time, transformers process ALL words simultaneously. GPUs accelerated this.' },
+          ].map((card, i) => (
+            <div key={i} style={{
+              padding: '1.25rem', borderRadius: 12, background: 'var(--bg2)',
+              border: `1px solid ${AC}22`,
+            }}>
+              <h4 style={{ fontSize: 'var(--font-body-lg)', fontWeight: 500, color: 'var(--text)', margin: '0 0 .35rem 0' }}>{card.title}</h4>
+              <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{card.desc}</div>
+            </div>
+          ))}
+        </div>
       </RevealSection>
 
       {/* ── Positional Encoding ── */}
-      <RevealSection>
-        <SubSection title="Wait — Order Matters!" accent={AC}>
-          <ConceptBlock title='"The dog bit the man" ≠ "The man bit the dog"' accent={AC}>
-            Attention treats input as a <strong style={{ color: 'var(--ink)' }}>bag of words</strong> — it has no built-in sense of order.
-            These two sentences look identical to pure attention: [The, dog, bit, the, man].
-            <br /><br />
-            <strong style={{ color: 'var(--ink)' }}>Positional encoding</strong> tags each word with its position so "dog" before "bit" is different from "dog" after.
-          </ConceptBlock>
-
-          <BeforeAfter
-            accent={AC}
-            before="Without position: 'dog bit man' = 'man bit dog' → BAD!"
-            after="With position: 'dog(1) bit(2) man(3)' ≠ 'man(1) bit(2) dog(3)' → CORRECT!"
-          />
-        </SubSection>
-      </RevealSection>
-
-      {/* ── Heat Map Demo ── */}
-      <RevealSection>
-        <DemoCard
-          label="Interactive Demo"
-          title="Attention Heat Map"
-          desc="Hover over the grid to see how strongly each word connects to every other word."
-        >
-          <AttentionHeatMap />
-        </DemoCard>
-      </RevealSection>
-
-      {/* ── Canvas Demo ── */}
-      <RevealSection>
-        <DemoCard
-          label="Interactive Demo"
-          title="Click a Word — See Attention Lines"
-          desc="Each curve connects the selected word to others. Thicker = stronger attention."
-        >
-          <div style={{ background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12, padding: '1rem' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginBottom: '1rem' }}>
-              {SENTENCE.map((word, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelected(i)}
-                  style={{
-                    padding: '.4rem .9rem', borderRadius: 8,
-                    background: selected === i ? 'rgba(124,58,237,.15)' : 'var(--soft-stone)',
-                    border: selected === i ? '1px solid var(--accent2)' : '1px solid var(--border)',
-                    color: selected === i ? 'var(--accent2)' : 'var(--ink)',
-                    fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-body)',
-                    cursor: 'pointer', transition: 'all .2s',
-                  }}
-                >
-                  {word}
-                </button>
-              ))}
-            </div>
-            <div style={{ borderRadius: 12, background: 'var(--soft-stone)', border: '1px solid var(--border)', overflow: 'hidden' }}>
-              <canvas ref={canvasRef} style={{ display: 'block', width: '100%' }} />
-            </div>
-          </div>
-        </DemoCard>
-      </RevealSection>
-
-      {/* ── Recap ── */}
-      <RevealSection>
-        <RecapBox accent={AC} items={[
-          'Attention lets every word look at every other word.',
-          'Old models (RNNs) forgot early words — transformers don\'t.',
-          'Q (Query), K (Key), V (Value) = library search system.',
-          'Multiple heads = multiple relationship types in parallel.',
-          'Positional encoding ensures word order is preserved.',
-          'Transformers process all words in parallel — faster and better.',
-        ]} />
-      </RevealSection>
-
-      {/* ── Mental Model ── */}
-      <RevealSection>
-        <MentalModel
-          emoji="🔦"
-          title="Your Mental Model"
-          desc="Think of attention as a spotlight system. Every word shines a spotlight on every other word. 'Cat' shines bright on 'sat' (who's doing what?) and 'mat' (where?). The brighter the light, the more information gets shared between those words."
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Wait — Order Matters!
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          Attention treats input as a <strong style={{ color: 'var(--text)' }}>bag of words</strong> — it has no built-in sense of order.
+          &ldquo;The dog bit the man&rdquo; and &ldquo;The man bit the dog&rdquo; would look identical without positional encoding.
+        </p>
+        <BeforeAfter
           accent={AC}
+          before="Without position: 'dog bit man' = 'man bit dog' → BAD"
+          after="With position: 'dog₁ bit₂ man₃' ≠ 'man₁ bit₂ dog₃' → CORRECT"
         />
       </RevealSection>
 
-      {/* ── 30-Second Summary ── */}
+      {/* ── Recap + Mental Model (side by side) ── */}
+      <RevealSection>
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 300px' }}>
+            <RecapBox accent={AC} items={[
+              'Attention lets every word look at every other word.',
+              "Old models (RNNs) forgot early words — transformers don't.",
+              'Q (Query), K (Key), V (Value) = library search system.',
+              'Multiple heads = multiple relationship types in parallel.',
+              'Positional encoding ensures word order is preserved.',
+              'Transformers process all words in parallel — faster and better.',
+            ]} />
+          </div>
+          <div style={{ flex: '1 1 300px' }}>
+            <MentalModel
+              emoji="🔦"
+              title="Your Mental Model"
+              desc="Think of attention as a spotlight system. Every word shines a spotlight on every other word. 'Cat' shines bright on 'sat' (who's doing what?) and 'mat' (where?). The brighter the light, the more information gets shared."
+              accent={AC}
+            />
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* ── Quick Summary ── */}
       <RevealSection>
         <QuickSummary
           accent={AC}
@@ -423,13 +453,13 @@ export default function Session2Attention() {
       {/* ── What to Learn Next ── */}
       <RevealSection>
         <div style={{
-          padding: '1rem 1.25rem', borderRadius: 12,
-          background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', marginBottom: '1rem',
+          padding: '1.25rem', borderRadius: 12,
+          background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',
         }}>
-          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
-          <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-body)' }}>
-            You now know how LLMs connect words. But they can only "see" what's in their <strong style={{ color: 'var(--ink)' }}>context window</strong> —
-            next we'll explore this critical limitation.
+          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
+          <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-normal)' }}>
+            You now know how LLMs connect words. But they can only &ldquo;see&rdquo; what&apos;s in their <strong style={{ color: 'var(--accent3)' }}>context window</strong> —
+            next we&apos;ll explore this critical limitation.
           </div>
         </div>
       </RevealSection>

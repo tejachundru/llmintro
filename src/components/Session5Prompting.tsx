@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import {
-  DemoCard, RevealSection, SectionHeader, SubSection,
+  RevealSection, SectionHeader, SubSection,
   ConceptBlock, KeyPoint, WarningBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
-  InteractiveSlider, StepBuilder,
+  InteractiveSlider, StepBuilder, AnimatedPipeline,
 } from './shared';
 
 const AC = '#e11d48';
@@ -36,7 +36,7 @@ const PRESETS: Preset[] = [
       { type: 'sys', label: 'System Instruction', body: 'You are a senior engineer. Review code for bugs and security. Think step by step before responding.' },
       { type: 'ctx', label: 'Example Given', body: 'Input: x = int(input())\nFix: Add try/except for non-numeric input.' },
       { type: 'user', label: 'User', body: 'Review: def divide(a,b): return a/b' },
-      { type: 'out', label: 'Model Response', body: 'Bug: ZeroDivisionError when b=0.\nFix: Add `if b == 0: raise ValueError("Cannot divide by zero")`.\nAlso add type hints: `def divide(a: float, b: float) -> float`.', typing: true },
+      { type: 'out', label: 'Model Response', body: 'Bug: ZeroDivisionError when b=0.\nFix: Add `if b == 0: raise ValueError("Cannot divide by zero")`.\nAlso add type hints.', typing: true },
     ],
   },
   {
@@ -55,6 +55,8 @@ const LAYER_STYLES: Record<string, { border: string; bg: string; labelColor: str
   user: { border: 'var(--accent3)', bg: 'rgba(5,150,105,.05)', labelColor: 'var(--accent3)' },
   out: { border: 'var(--accent4)', bg: 'rgba(251,146,60,.05)', labelColor: 'var(--accent4)' },
 };
+
+/* ─── Prompt Layer Card ─── */
 
 function PromptLayer({ layer, idx }: { layer: Layer; idx: number }) {
   const [typed, setTyped] = useState(!layer.typing);
@@ -75,454 +77,173 @@ function PromptLayer({ layer, idx }: { layer: Layer; idx: number }) {
       background: s.bg, animation: 'fadeUp .4s ease both', animationDelay: idx * 0.08 + 's',
     }}>
       <div style={{
-        fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-micro)', letterSpacing: 'var(--ls-wide)',
+        fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', letterSpacing: 'var(--ls-wide)',
         textTransform: 'uppercase', marginBottom: '.35rem', fontWeight: 500, color: s.labelColor,
       }}>{layer.label}</div>
       <div style={{
-        color: 'var(--ink)', fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-body)', whiteSpace: 'pre-wrap',
-        borderRight: (!typed && layer.typing) ? '2px solid var(--accent4)' : 'none',
-        animation: (!typed && layer.typing) ? 'blink .7s step-end infinite' : 'none',
+        fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)',
+        fontFamily: 'var(--font-mono)',
       }}>
-        {layer.body}
+        {typed ? layer.body : <span style={{ opacity: 0.3 }}>Generating...</span>}
       </div>
     </div>
   );
 }
 
-/* ─── Live Temperature Slider ─── */
+/* ─── Prompt Builder Demo (inline) ─── */
 
-const TEMP_OUTPUTS: Record<number, string> = {
-  0: '"The capital of France is Paris."',
-  0.3: '"The capital of France is Paris, known for the Eiffel Tower."',
-  0.5: '"Paris is the capital of France, a beautiful city with amazing food and culture."',
-  0.7: '"Paris — France\'s dazzling capital where history meets modern charm and every street tells a story."',
-  1.0: '"Ah, Paris! The City of Light, France\'s magnificent capital where croissants are poetry and the Eiffel Tower kisses the sky."',
-};
-
-function TemperatureSlider() {
-  const [temp, setTemp] = useState(0.3);
-
-  const getOutput = (t: number) => {
-    const keys = Object.keys(TEMP_OUTPUTS).map(Number).sort((a, b) => a - b);
-    let closest = keys[0];
-    for (const k of keys) {
-      if (k <= t) closest = k;
-    }
-    return TEMP_OUTPUTS[closest];
-  };
+function PromptBuilder() {
+  const [presetIdx, setPresetIdx] = useState(0);
+  const preset = PRESETS[presetIdx];
 
   return (
-    <div style={{ background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12, padding: '1.25rem' }}>
-      <InteractiveSlider
-        value={temp}
-        min={0}
-        max={1}
-        step={0.1}
-        label="Temperature"
-        accent={AC}
-        format={v => v.toFixed(1)}
-        onChange={setTemp}
-      />
-
-      <div style={{
-        marginTop: '1rem', padding: '1rem', borderRadius: 8,
-        background: 'var(--soft-stone)', border: '1px solid var(--border)',
-        fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-body)', color: 'var(--ink)',
-        lineHeight: 'var(--lh-body)', minHeight: 40,
-      }}>
-        {getOutput(temp)}
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Click a preset to see how the prompt is layered:
       </div>
+      <div style={{
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.25rem',
+      }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {PRESETS.map((p, i) => (
+            <button
+              key={i}
+              onClick={() => setPresetIdx(i)}
+              style={{
+                padding: '.35rem .75rem', borderRadius: 6, fontSize: 'var(--font-caption)',
+                background: presetIdx === i ? AC + '1e' : 'var(--bg3)',
+                border: `1px solid ${presetIdx === i ? AC + '55' : 'var(--border)'}`,
+                color: presetIdx === i ? AC : 'var(--muted)',
+                cursor: 'pointer', fontFamily: 'var(--font-mono)', fontWeight: presetIdx === i ? 600 : 400,
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
 
-      <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', marginTop: '.75rem', flexWrap: 'wrap' }}>
-        {[
-          { t: 0, label: '0.0', color: AC },
-          { t: 0.3, label: '0.3', color: 'var(--accent2)' },
-          { t: 0.5, label: '0.5', color: 'var(--accent3)' },
-          { t: 0.7, label: '0.7', color: 'var(--accent4)' },
-          { t: 1.0, label: '1.0', color: 'var(--accent5)' },
-        ].map(p => (
-          <button
-            key={p.t}
-            onClick={() => setTemp(p.t)}
-            style={{
-              padding: '.25rem .6rem', borderRadius: 5, fontSize: 'var(--font-micro)',
-              background: temp === p.t ? p.color + '20' : 'var(--soft-stone)',
-              border: `1px solid ${temp === p.t ? p.color + '66' : 'var(--border)'}`,
-              color: temp === p.t ? p.color : 'var(--muted)',
-              cursor: 'pointer', fontFamily: 'var(--ff-mono)',
-            }}
-          >
-            {p.label}
-          </button>
+        {preset.layers.map((layer, i) => (
+          <PromptLayer key={`${presetIdx}-${i}`} layer={layer} idx={i} />
         ))}
       </div>
     </div>
   );
 }
 
-/* ─── Few-Shot Builder ─── */
+/* ─── Temperature Demo (inline) ─── */
 
-function FewShotBuilder() {
-  const [examples, setExamples] = useState<{ input: string; output: string }[]>([
-    { input: 'I love this!', output: 'Positive' },
-    { input: 'This is terrible.', output: 'Negative' },
-  ]);
-  const [testInput, setTestInput] = useState('Best day ever!');
-  const [showAnswer, setShowAnswer] = useState(false);
-
-  const addExample = () => {
-    setExamples(prev => [...prev, { input: '', output: '' }]);
+function TemperatureDemo() {
+  const [temp, setTemp] = useState(0.7);
+  const outputs: Record<number, string[]> = {
+    0: ['The cat sat on the mat.', 'The cat sat on the mat.', 'The cat sat on the mat.'],
+    3: ['The cat lounged on the mat.', 'The cat rested on the rug.', 'The feline sprawled across the carpet.'],
+    7: ['The cat napped lazily.', 'A feline snoozed in the sun.', 'Whiskers curled up somewhere warm.'],
+    10: ['The dragon soared through clouds.', 'A spaceship hummed in orbit.', 'Quantum particles danced in chaos.'],
   };
-
-  const updateExample = (i: number, field: 'input' | 'output', val: string) => {
-    setExamples(prev => prev.map((ex, j) => j === i ? { ...ex, [field]: val } : ex));
-  };
-
-  const removeExample = (i: number) => {
-    setExamples(prev => prev.filter((_, j) => j !== i));
-  };
+  const closestTemp = [0, 3, 7, 10].reduce((prev, curr) => Math.abs(curr - temp * 10) < Math.abs(prev - temp * 10) ? curr : prev);
 
   return (
-    <div style={{ background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12, padding: '1.25rem' }}>
-      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', marginBottom: '.75rem' }}>
-        Add examples to teach the model a pattern:
+    <div style={{ marginBottom: '2.5rem' }}>
+      <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
+        Drag the slider to see how temperature affects creativity:
       </div>
-
-      {examples.map((ex, i) => (
-        <div key={i} style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem', alignItems: 'center' }}>
-          <span style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', minWidth: 20 }}>#{i + 1}</span>
-          <input
-            value={ex.input}
-            onChange={e => updateExample(i, 'input', e.target.value)}
-            placeholder="Input..."
-            style={{
-              flex: 1, padding: '.4rem .6rem', borderRadius: 6,
-              background: 'var(--soft-stone)', border: '1px solid var(--hairline)',
-              color: 'var(--ink)', fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-caption)',
-              outline: 'none',
-            }}
-          />
-          <span style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)' }}>→</span>
-          <input
-            value={ex.output}
-            onChange={e => updateExample(i, 'output', e.target.value)}
-            placeholder="Output..."
-            style={{
-              flex: 1, padding: '.4rem .6rem', borderRadius: 6,
-              background: 'var(--soft-stone)', border: '1px solid var(--hairline)',
-              color: 'var(--accent3)', fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-caption)',
-              outline: 'none',
-            }}
-          />
-          <button
-            onClick={() => removeExample(i)}
-            style={{
-              padding: '.25rem .5rem', borderRadius: 4,
-              background: 'rgba(244,67,54,.1)', border: '1px solid rgba(244,67,54,.3)',
-              color: '#f87171', fontSize: 'var(--font-mono)', cursor: 'pointer',
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      ))}
-
-      <div style={{ display: 'flex', gap: '.5rem', marginBottom: '1rem' }}>
-        <button onClick={addExample} style={{
-          padding: '.35rem .7rem', borderRadius: 6, fontSize: 'var(--font-micro)',
-          background: AC + '15', border: `1px solid ${AC}44`,
-          color: AC, cursor: 'pointer', fontFamily: "var(--font-body)",
-        }}>
-          + Add Example
-        </button>
-      </div>
-
       <div style={{
-        padding: '.75rem', borderRadius: 8,
-        background: 'var(--soft-stone)', border: '1px solid var(--border)',
+        background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
+        padding: '1.25rem',
       }}>
-        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--ff-mono)', marginBottom: '.5rem' }}>
-          Test with new input:
-        </div>
-        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>Deterministic</span>
           <input
-            value={testInput}
-            onChange={e => setTestInput(e.target.value)}
-            style={{
-              flex: 1, padding: '.4rem .6rem', borderRadius: 6,
-              background: 'var(--primary)', border: '1px solid var(--hairline)', color: 'var(--muted-dark)',
-              fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-caption)',
-              outline: 'none',
-            }}
-            placeholder="Type a test input..."
+            type="range" min="0" max="1" step="0.1" value={temp}
+            onChange={e => setTemp(Number(e.target.value))}
+            style={{ flex: 1, accentColor: AC }}
+            aria-label="Temperature slider"
           />
-          <button
-            onClick={() => setShowAnswer(true)}
-            style={{
-              padding: '.35rem .7rem', borderRadius: 6, fontSize: 'var(--font-micro)',
-              background: 'var(--accent3)' + '20', border: '1px solid var(--accent3)' + '44',
-              color: 'var(--accent3)', cursor: 'pointer',
-            }}
-          >
-            Predict
-          </button>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>Creative</span>
         </div>
-        {showAnswer && (
-          <div style={{
-            padding: '.5rem .75rem', borderRadius: 6,
-            background: 'rgba(5,150,105,.1)', border: '1px solid rgba(5,150,105,.3)',
-            fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-body)', color: 'var(--accent3)',
-            animation: 'fadeIn .3s ease',
-          }}>
-            Input: "{testInput}" → <strong>Positive</strong>
-            <div style={{ fontSize: 'var(--font-mono)', color: 'var(--muted)', marginTop: '.25rem' }}>
-              (Predicted based on your {examples.length} examples)
+        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)', color: AC, fontWeight: 600 }}>
+            Temperature: {temp.toFixed(1)}
+          </span>
+        </div>
+        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.5rem' }}>
+          Prompt: &ldquo;The cat sat on the___&rdquo;
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
+          {outputs[closestTemp].map((out, i) => (
+            <div key={i} style={{
+              padding: '.5rem .75rem', borderRadius: 6,
+              background: 'var(--bg3)', border: '1px solid var(--border)',
+              fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: 'var(--text)',
+            }}>
+              {out}
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function Session5Prompting() {
-  const [activePreset, setActivePreset] = useState(0);
-  const [key, setKey] = useState(0);
-
-  const handlePreset = (i: number) => {
-    setActivePreset(i);
-    setKey(k => k + 1);
-  };
-
   return (
-    <section id="s5" style={{ maxWidth: 900, margin: '0 auto', padding: '5rem 2rem' }}>
+    <section id="s5" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
+      {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="05" tag="Bonus Session · 1 hr" title="How to Talk to an LLM" accentColor={AC} borderColor="rgba(244,114,182,0.3)" />
-        <p style={{ color: 'var(--muted)', maxWidth: 600, marginBottom: '2.5rem', fontSize: 'var(--font-body)' }}>
-          Prompts are not magic spells. They're <strong style={{ color: 'var(--ink)' }}>instructions to a statistical machine</strong>.
-          Once you understand how the model "thinks," you can write prompts that work every time — not just sometimes.
+        <SectionHeader num="05" tag="Session 5 · 1.5 hrs" title="The Art of Prompting" accentColor={AC} borderColor={`${AC}44`} />
+        <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
+          The same model can produce garbage or gold depending on <strong style={{ color: 'var(--text)' }}>how you ask</strong>.
+          Prompt engineering is the skill of crafting inputs that reliably produce great outputs.
         </p>
       </RevealSection>
 
-      {/* ── Real-World Analogy ── */}
-      <RevealSection>
-        <SubSection title="The Intern Analogy" accent={AC}>
-          <ConceptBlock title="You're the boss, LLM is the intern" accent={AC}>
-            Imagine you have a new intern. They're incredibly smart but have never worked at your company.
-            They take everything you say <strong style={{ color: 'var(--ink)' }}>literally</strong>.
-            <br /><br />
-            If you say "handle this," they might guess wrong.
-            If you say "read this document, extract the refund policy, and answer yes/no if the customer qualifies,"
-            they'll do exactly that.
-            <br /><br />
-            <strong style={{ color: 'var(--ink)' }}>That's prompting.</strong> Clear instructions = good results. Vague instructions = random guesses.
-          </ConceptBlock>
-        </SubSection>
+      {/* ── The Analogy ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
+          Prompting = Giving Instructions to a Smart Intern
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
+          Imagine a brilliant intern who has read every book but has zero context about your company.
+          They will do exactly what you ask — nothing more, nothing less. Vague instructions yield vague results.
+          <strong style={{ color: 'var(--text)' }}> Be specific, structured, and clear.</strong>
+        </p>
+        <AnimatedPipeline accent={AC} stages={[
+          { icon: '...', label: 'Bad Prompt', desc: '"Write something about AI"' },
+          { icon: '...', label: 'Vague Output', desc: 'Generic, unfocused text' },
+          { icon: '...', label: 'Good Prompt', desc: 'Role + context + format + example' },
+          { icon: '...', label: 'Great Output', desc: 'Specific, useful, on-target' },
+        ]} />
       </RevealSection>
 
-      {/* ── System Prompts ── */}
+      {/* ── Playground ── */}
       <RevealSection>
-        <SubSection title="System Prompts: The Invisible Instruction Manual" accent={AC}>
-          <ConceptBlock title="Set the rules before the conversation starts" accent={AC}>
-            The system prompt is like a rule sheet you give your intern at the start of the day.
-            It sets the persona, constraints, and output format. <strong style={{ color: 'var(--ink)' }}>Every user message follows these rules.</strong>
-          </ConceptBlock>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
+          The Playground
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', marginBottom: '2rem', letterSpacing: 'var(--ls-wide)', textTransform: 'uppercase' }}>
+          Explore prompt layers and temperature interactively
+        </p>
 
-          <BeforeAfter
-            accent={AC}
-            before='"Answer the question." (Vague — model might give a short or long, correct or wrong answer)'
-            after={'"You are a senior accountant. Answer concisely. If you don\u2019t know, say: I don\u2019t have enough information. Use bullet points. Cite sources." (Clear \u2014 model knows exactly what to do)'}
-          />
-
-          <KeyPoint num={1} title="Tell it what NOT to do" accent={AC}>
-            "Don't make up information" is weak.
-            <strong style={{ color: 'var(--ink)' }}>"If the answer isn't in the provided documents, say 'I don't know' — never guess"</strong> is strong.
-            Negative instructions work better than positive ones.
-          </KeyPoint>
-
-          <KeyPoint num={2} title="Specify the output format" accent={AC}>
-            "Respond in JSON" is vague. "Respond with a JSON object with keys: name (string), date (string), amount (number). No other text."
-            The model follows format instructions <strong style={{ color: 'var(--ink)' }}>literally</strong> — be literal.
-          </KeyPoint>
-        </SubSection>
+        <PromptBuilder />
+        <TemperatureDemo />
       </RevealSection>
 
-      {/* ── Chain-of-Thought ── */}
-      <RevealSection>
-        <SubSection title="Chain-of-Thought: Show Your Work" accent={AC}>
-          <ConceptBlock title={'"Think step by step" is not a suggestion \u2014 it\u2019s a performance hack'} accent={AC}>
-            When you ask the model to think step by step, you're giving it <strong style={{ color: 'var(--ink)' }}>more tokens to compute on</strong>
-            before the final answer. Each step is a chance to refine the reasoning.
-            <br /><br />
-            It's the difference between asking someone "What's 15% of 847?" and making them blurt an answer,
-            vs asking them to calculate it on paper first.
-          </ConceptBlock>
-
-          <BeforeAfter
-            accent={AC}
-            before='Q: "What is 15% of 847?" → A: "126" (Wrong — model guessed)'
-            after='Q: "Think step by step. What is 15% of 847?"\n→ "10% of 847 = 84.7\n5% of 847 = 42.35\n15% = 84.7 + 42.35 = 127.05" → Correct!'
-          />
-
-          <KeyPoint num={1} title="Zero-shot vs Few-shot CoT" accent={AC}>
-            Zero-shot: just add "Think step by step." Few-shot: provide 2-3 examples of questions with step-by-step solutions.
-            <strong style={{ color: 'var(--ink)' }}>Few-shot CoT is more reliable</strong>, especially for complex tasks.
-          </KeyPoint>
-
-          <StepBuilder accent={AC} steps={[
-            { label: 'Without CoT: model jumps to answer', detail: 'Q: "A bat and ball cost ₹110. The bat costs ₹100 more than the ball. How much is the ball?"\n\nA: "₹10" ❌ Wrong! The model rushed.' },
-            { label: 'With CoT: model thinks step by step', detail: 'Q: "Think step by step. A bat and ball cost ₹110. The bat costs ₹100 more than the ball. How much is the ball?"\n\nA: "Let x = cost of ball. Bat = x + 100. Total: x + (x + 100) = 110. So 2x + 100 = 110. 2x = 10. x = ₹5." ✅ Correct!' },
-          ]} />
-        </SubSection>
-      </RevealSection>
-
-      {/* ── Temperature ── */}
-      <RevealSection>
-        <SubSection title="Temperature: The Creativity Dial" accent={AC}>
-          <ConceptBlock title="How random do you want the answer?" accent={AC}>
-            Temperature controls how "creative" the model gets.
-            <br /><br />
-            <strong style={{ color: 'var(--ink)' }}>Low temperature (0)</strong> = always picks the most likely word. Boring but reliable.
-            <strong style={{ color: 'var(--ink)' }}>High temperature (1)</strong> = picks less likely words. Creative but unpredictable.
-          </ConceptBlock>
-
-          <div style={{
-            background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12,
-            padding: '1.25rem', marginBottom: '1rem',
-          }}>
-            <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', marginBottom: '.75rem', textAlign: 'center' }}>
-              Same prompt, different temperatures
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--accent)', marginBottom: '.25rem' }}>Temperature 0.0 (Factual):</div>
-              <div style={{ fontSize: 'var(--font-caption)', fontFamily: 'var(--ff-mono)', color: 'var(--ink)', padding: '.5rem .75rem', background: 'var(--soft-stone)', borderRadius: 8 }}>
-                "The capital of France is Paris."
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--accent5)', marginBottom: '.25rem' }}>Temperature 0.5 (Balanced):</div>
-              <div style={{ fontSize: 'var(--font-caption)', fontFamily: 'var(--ff-mono)', color: 'var(--ink)', padding: '.5rem .75rem', background: 'var(--soft-stone)', borderRadius: 8 }}>
-                "The capital of France is Paris, a city known for its art, cuisine, and the Eiffel Tower."
-              </div>
-            </div>
-
-            <div>
-              <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--accent4)', marginBottom: '.25rem' }}>Temperature 1.0 (Creative):</div>
-              <div style={{ fontSize: 'var(--font-caption)', fontFamily: 'var(--ff-mono)', color: 'var(--ink)', padding: '.5rem .75rem', background: 'var(--soft-stone)', borderRadius: 8 }}>
-                "Paris, the City of Light, is France's majestic capital — where history whispers from every corner and croissants melt like buttered sunshine."
-              </div>
-            </div>
-          </div>
-
-          <DemoCard
-            label="Interactive Demo"
-            title="Live Temperature Control"
-            desc="Drag the slider to see how temperature changes the model's output for the same prompt."
-          >
-            <TemperatureSlider />
-          </DemoCard>
-
-          <WarningBox accent={AC}>
-            <strong>Temperature 0 does NOT guarantee the same answer every time.</strong> Some providers still add slight randomness.
-            For truly deterministic output, use temperature=0, top_p=1, and a fixed seed (if supported).
-          </WarningBox>
-        </SubSection>
-      </RevealSection>
-
-      {/* ── Few-Shot Learning ── */}
-      <RevealSection>
-        <SubSection title="Few-Shot: Teaching by Example" accent={AC}>
-          <ConceptBlock title="Show, don't tell" accent={AC}>
-            Instead of explaining the format, show 2-3 examples. The model sees the pattern and follows it.
-            <strong style={{ color: 'var(--ink)' }}>This is called in-context learning</strong> — the model learns a new task
-            just from examples in the prompt, without any training.
-          </ConceptBlock>
-
-          <div style={{
-            background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', borderRadius: 12,
-            padding: '1rem', marginBottom: '1rem',
-          }}>
-            <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', marginBottom: '.75rem' }}>Example: Teaching sentiment analysis</div>
-            <div style={{ fontFamily: 'var(--ff-mono)', fontSize: 'var(--font-caption)', lineHeight: 1.8 }}>
-              <div style={{ color: 'var(--accent3)' }}>Input: "I love this product!" → Positive</div>
-              <div style={{ color: 'var(--accent3)' }}>Input: "This is terrible." → Negative</div>
-              <div style={{ color: 'var(--accent3)' }}>Input: "It's okay I guess." → Neutral</div>
-              <div style={{ color: 'var(--ink)', marginTop: '.5rem' }}>Input: "Best purchase ever!" → <span style={{ color: 'var(--accent2)' }}>???</span></div>
-            </div>
-            <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', marginTop: '.5rem' }}>
-              The model will predict "Positive" because it matches the pattern
-            </div>
-          </div>
-
-          <KeyPoint num={1} title="Sweet spot: 2-3 examples" accent={AC}>
-            0 examples: model guesses. 1 example: has a pattern. 3 examples: confident.
-            5+ examples: diminishing returns. <strong style={{ color: 'var(--ink)' }}>2-3 diverse examples is ideal.</strong>
-          </KeyPoint>
-
-          <DemoCard
-            label="Interactive Demo"
-            title="Build Your Own Few-Shot Prompt"
-            desc="Add examples to teach the model a pattern, then test it with new input."
-          >
-            <FewShotBuilder />
-          </DemoCard>
-        </SubSection>
-      </RevealSection>
-
-      {/* ── Prompt Layers Demo ── */}
-      <RevealSection>
-        <DemoCard
-          label="Explore It Yourself"
-          title="See What the Model Actually Receives"
-          desc="Every prompt has layers. Click a preset to see the full structure."
-        >
-          <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            {PRESETS.map((p, i) => (
-              <button
-                key={i}
-                onClick={() => handlePreset(i)}
-                style={{
-                  padding: '.45rem 1rem', borderRadius: 8,
-                  border: activePreset === i ? '1px solid var(--accent)' : '1px solid var(--hairline)',
-                  background: activePreset === i ? 'rgba(24,99,220,.06)' : 'var(--primary)',
-                  color: activePreset === i ? 'var(--accent)' : 'var(--muted)',
-                  fontSize: 'var(--font-caption)', cursor: 'pointer', fontFamily: "var(--font-body)", transition: 'all .2s',
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-          <div key={key}>
-            {PRESETS[activePreset].layers.map((layer, i) => (
-              <PromptLayer key={i} layer={layer} idx={i} />
-            ))}
-          </div>
-        </DemoCard>
-      </RevealSection>
-
-      {/* ── Quick Tips ── */}
-      <RevealSection>
-        <SubSection title="Quick Prompting Tips" accent={AC}>
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem',
-          }}>
+      {/* ── Prompt Anatomy ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <SubSection title="Anatomy of a Great Prompt" accent={AC}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             {[
-              { title: 'Be specific', emoji: '🎯', desc: '"Answer concisely" → not "Answer." "Use bullet points" → not "Format nicely."' },
-              { title: 'Set the persona', emoji: '👤', desc: '"You are a senior Python developer" works better than "Write code."' },
-              { title: 'Use examples', emoji: '📝', desc: 'Show 2-3 examples instead of describing the format. The model learns from patterns.' },
-              { title: 'Chain of thought', emoji: '🧮', desc: 'Add "Think step by step" for better reasoning. Each step is more compute.' },
-              { title: 'Format for reliability', emoji: '📋', desc: 'Ask for JSON, markdown, or XML to make output parseable.' },
-              { title: 'Repeat important stuff', emoji: '🔄', desc: 'Put key instructions at both start and end of the prompt.' },
+              { title: '1. System Instructions', desc: 'Set the role: "You are a senior engineer who reviews code for bugs." This frames all responses.', color: 'var(--accent)' },
+              { title: '2. Context', desc: 'Relevant background: policy docs, code snippets, examples. From RAG or pasted directly.', color: 'var(--accent2)' },
+              { title: '3. User Message', desc: 'The actual task: "Review this function and find bugs." Be specific about what you want.', color: 'var(--accent3)' },
+              { title: '4. Output Format', desc: '"Respond as JSON" or "Use bullet points" or "Max 3 sentences." Constrain the output.', color: 'var(--accent4)' },
             ].map((card, i) => (
               <div key={i} style={{
-                padding: '1rem', borderRadius: 10, background: 'var(--primary)',
-                border: `1px solid ${AC}22`, textAlign: 'center',
+                padding: '1.25rem', borderRadius: 12, background: 'var(--bg2)',
+                borderLeft: `3px solid ${card.color}`,
               }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '.5rem' }}>{card.emoji}</div>
-                <div style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--ink)', marginBottom: '.25rem' }}>{card.title}</div>
+                <h4 style={{ fontSize: 'var(--font-body)', fontWeight: 500, color: 'var(--text)', margin: '0 0 .35rem 0' }}>{card.title}</h4>
                 <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', lineHeight: 'var(--lh-snug)' }}>{card.desc}</div>
               </div>
             ))}
@@ -530,57 +251,77 @@ export default function Session5Prompting() {
         </SubSection>
       </RevealSection>
 
-      {/* ── Recap ── */}
-      <RevealSection>
-        <RecapBox accent={AC} items={[
-          'Think of the LLM as a literal-minded intern — give clear, specific instructions.',
-          'System prompt = the rule sheet for the entire conversation.',
-          'Chain-of-thought = more tokens = better reasoning. Add "think step by step."',
-          'Temperature = creativity dial. Low for facts, high for creativity.',
-          'Few-shot examples teach the model the format without training.',
-          'Be specific about what NOT to do and the exact output format you want.',
-        ]} />
+      {/* ── Key Techniques ── */}
+      <RevealSection style={{ marginBottom: '4rem' }}>
+        <SubSection title="Techniques That Actually Work" accent={AC}>
+          <StepBuilder accent={AC} steps={[
+            { label: 'Chain of Thought', detail: 'Add "Think step by step" to force the model to reason aloud. It dramatically improves accuracy on math, logic, and multi-step problems.' },
+            { label: 'Few-Shot Examples', detail: 'Show 2-3 input/output pairs before your actual question. The model pattern-matches. "Here are examples of good answers: ..."' },
+            { label: 'Role / Persona', detail: '"You are a senior security engineer." This biases the model toward domain-specific vocabulary and concerns.' },
+            { label: 'Output Constraints', detail: '"Respond in JSON only, max 100 words, include a confidence score." Constraints reduce rambling and format inconsistency.' },
+            { label: 'Self-Critique', detail: 'Ask the model to review its own answer: "Now critique your response for errors." Often catches its own mistakes.' },
+          ]} />
+
+          <WarningBox accent={AC}>
+            <strong>Common mistake:</strong> Writing long, vague prompts. If you wouldn&apos;t accept it as instructions from your boss, the model won&apos;t either.
+            <strong style={{ color: 'var(--text)' }}> Be specific about role, context, format, and constraints.</strong>
+          </WarningBox>
+        </SubSection>
       </RevealSection>
 
-      {/* ── Mental Model ── */}
+      {/* ── Recap + Mental Model ── */}
       <RevealSection>
-        <MentalModel
-          emoji="🎯"
-          title="Your Mental Model"
-          desc="Think of prompting as giving instructions to a brilliant but very literal intern. They take everything you say at face value. Vague instructions = random results. Specific, structured instructions with examples = reliable, high-quality results every time."
-          accent={AC}
-        />
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 300px' }}>
+            <RecapBox accent={AC} items={[
+              'Same model, different prompt = wildly different output quality.',
+              'Prompt = System Instructions + Context + Task + Output Format.',
+              'Chain of Thought ("think step by step") improves reasoning.',
+              'Few-shot examples teach the model the pattern you want.',
+              'Temperature controls creativity vs. consistency.',
+              'Constrain output format to get reliable, parseable results.',
+            ]} />
+          </div>
+          <div style={{ flex: '1 1 300px' }}>
+            <MentalModel
+              emoji="🎯"
+              title="Your Mental Model"
+              desc="Think of prompting like briefing a brilliant intern. They have all the knowledge, but zero context about YOUR task. The better the brief (role, docs, examples, format), the better the work."
+              accent={AC}
+            />
+          </div>
+        </div>
       </RevealSection>
 
-      {/* ── 30-Second Summary ── */}
+      {/* ── Quick Summary ── */}
       <RevealSection>
         <QuickSummary
           accent={AC}
-          summary="Good prompting = clear, specific instructions to a literal-minded machine. Use system prompts for rules, chain-of-thought for reasoning, temperature for creativity control, and few-shot examples for format consistency. Be precise, use examples, and tell the model what NOT to do."
+          summary="Prompt engineering is the skill of crafting inputs that reliably produce great outputs. Structure prompts as: System Instructions + Context + Task + Format. Use Chain of Thought for reasoning, few-shot examples for patterns, and temperature to control creativity. Be specific — the model does exactly what you ask."
         />
       </RevealSection>
 
       {/* ── Practice Questions ── */}
       <RevealSection>
         <PracticeQuestions accent={AC} questions={[
-          'Why does "think step by step" improve answers?',
-          'What temperature would you use for writing a poem vs extracting data from a receipt?',
-          'What\'s the difference between zero-shot and few-shot chain-of-thought?',
-          'Why shouldn\'t you put secrets (like API keys) in system prompts?',
-          'Give an example of a bad (vague) vs good (specific) system prompt.',
+          'What are the 4 parts of a well-structured prompt?',
+          'How does "Chain of Thought" prompting improve accuracy?',
+          'What is the effect of temperature = 0 vs temperature = 1?',
+          'Give an example of a few-shot prompt.',
+          'Why is "respond in JSON only" a useful constraint?',
         ]} />
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
       <RevealSection>
         <div style={{
-          padding: '1rem 1.25rem', borderRadius: 12,
-          background: 'var(--primary)', border: '1px solid var(--border-dark)', color: 'var(--muted-dark-strong)', marginBottom: '1rem',
+          padding: '1.25rem', borderRadius: 12,
+          background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',
         }}>
-          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--ff-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
-          <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-body)' }}>
-            You can now talk to LLMs effectively. But what if you want the model to <strong style={{ color: 'var(--ink)' }}>do</strong> things —
-            send emails, read files, book meetings? That's where <strong style={{ color: 'var(--accent6)' }}>MCP</strong> comes in.
+          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 'var(--ls-wide)', marginBottom: '.5rem' }}>What's Next</div>
+          <div style={{ fontSize: 'var(--font-body)', color: 'var(--muted)', lineHeight: 'var(--lh-normal)' }}>
+            You can prompt an LLM with text. But what if it could <strong style={{ color: 'var(--text)' }}>take actions</strong> —
+            read your files, search your email, create calendar events? That&apos;s <strong style={{ color: 'var(--accent6)' }}>MCP</strong>.
           </div>
         </div>
       </RevealSection>
