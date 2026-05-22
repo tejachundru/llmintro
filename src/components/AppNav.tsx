@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 
 const SESSIONS = [
   { path: '/', label: 'Home', num: '⌂', accent: '#2563eb' },
-  { path: '/1', label: 'The Prediction Machine', num: '01', accent: '#2563eb' },
-  { path: '/2', label: 'The Attention Engine', num: '02', accent: '#7c3aed' },
-  { path: '/3', label: 'The Working Desk', num: '03', accent: '#047857' },
-  { path: '/4', label: 'The Open-Book Exam', num: '04', accent: '#c2410c' },
-  { path: '/5', label: 'The Art of the Ask', num: '05', accent: '#be185d' },
-  { path: '/6', label: 'From Talk to Action', num: '06', accent: '#0f766e' },
+  { path: '/1', label: 'LLMs', num: '01', accent: '#2563eb' },
+  { path: '/2', label: 'Attention', num: '02', accent: '#7c3aed' },
+  { path: '/3', label: 'Context', num: '03', accent: '#047857' },
+  { path: '/4', label: 'RAG', num: '04', accent: '#c2410c' },
+  { path: '/5', label: 'Prompting', num: '05', accent: '#be185d' },
+  { path: '/6', label: 'MCP', num: '06', accent: '#0f766e' },
 ];
 
 export default function AppNav() {

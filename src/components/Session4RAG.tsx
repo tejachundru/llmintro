@@ -121,7 +121,7 @@ export default function Session4RAG() {
     <section id="s4" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="04" tag="Topic 4" title="The Open-Book Exam" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="04" tag="Topic 4" title="RAG" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Ask an LLM &ldquo;What&apos;s our refund policy?&rdquo; and it will <strong style={{ color: 'var(--text)' }}>guess</strong> — convincingly, but wrong. It was trained on the internet, not your company&apos;s documents.
         </p>
@@ -140,11 +140,10 @@ export default function Session4RAG() {
       {/* ── The Problem ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          The Problem: LLMs Don&apos;t Know Your Company
+          The Problem
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Ask an LLM &ldquo;What is our refund policy?&rdquo; and it will guess — convincingly, but wrong.
-          It was trained on the internet, not your internal docs. <strong style={{ color: 'var(--text)' }}>RAG fixes this</strong> by finding the right information first, then letting the LLM answer.
+          Ask an LLM your company&apos;s policy — it guesses. Trained on the internet, not your docs. <strong style={{ color: 'var(--text)' }}>RAG fixes this</strong>.
         </p>
         <BeforeAfter
           accent={AC}
@@ -365,7 +364,7 @@ export default function Session4RAG() {
             <MentalModel
               emoji="📎"
               title="Your Mental Model"
-              desc="RAG is like giving the LLM an open-book exam. Instead of guessing from memory, it looks up the answer in your documents first, then formulates a response grounded in facts."
+              desc="Open-book exam. Look up facts before answering."
               accent={AC}
             />
           </div>

@@ -249,7 +249,7 @@ export default function Session5Prompting() {
     <section id="s5" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="05" tag="Topic 5" title="The Art of the Ask" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="05" tag="Topic 5" title="Prompting" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Here&apos;s a secret: <strong style={{ color: 'var(--text)' }}>the same LLM can produce garbage or gold</strong> — it all depends on how you ask.
         </p>
@@ -268,12 +268,10 @@ export default function Session5Prompting() {
       {/* ── The Analogy ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          Prompting = Giving Instructions to a Smart Intern
+          The Intern
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Imagine a brilliant intern who has read every book but has zero context about your company.
-          They will do exactly what you ask — nothing more, nothing less. Vague instructions yield vague results.
-          <strong style={{ color: 'var(--text)' }}> Be specific, structured, and clear.</strong>
+          A brilliant intern with zero context about you. Vague in &rarr; vague out. Specific in &rarr; great out.
         </p>
         <AnimatedPipeline accent={AC} stages={[
           { icon: '❌', label: 'Bad Prompt', desc: '"Write something about AI"' },
@@ -453,7 +451,7 @@ export default function Session5Prompting() {
             <MentalModel
               emoji="🎯"
               title="Your Mental Model"
-              desc="Think of prompting like briefing a brilliant intern. They have all the knowledge, but zero context about YOUR task. The better the brief (role, docs, examples, format), the better the work."
+              desc="A brilliant intern with zero context. The better the brief, the better the work."
               accent={AC}
             />
           </div>

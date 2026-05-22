@@ -210,7 +210,7 @@ export default function Session6MCP() {
     <section id="s6" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="06" tag="Session 6 · 1 hr" title="From Talk to Action" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="06" tag="Topic 6" title="MCP" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           So far, the LLM can only <em>talk</em>. You ask, it answers. But what if it could <strong style={{ color: 'var(--text)' }}>actually do things</strong>? Send emails, read your calendar, search your files, book meetings?
         </p>
@@ -229,12 +229,10 @@ export default function Session6MCP() {
       {/* ── The Analogy ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          A Consultant Who Can Only Talk
+          The Consultant
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Imagine a brilliant consultant who gives amazing advice — but has <strong style={{ color: 'var(--text)' }}>no arms or legs</strong>.
-          They can tell you exactly how to book a meeting, but they can&apos;t do it themselves.
-          <strong style={{ color: 'var(--text)' }}> MCP gives them hands.</strong>
+          A brilliant consultant with no hands. They can tell you how but can&apos;t do it. <strong style={{ color: 'var(--text)' }}>MCP gives them hands.</strong>
         </p>
         <BeforeAfter
           accent={AC}
@@ -505,7 +503,7 @@ export default function Session6MCP() {
             <MentalModel
               emoji="🦾"
               title="Your Mental Model"
-              desc="Think of MCP as giving a brilliant consultant arms and legs. Before MCP, they could tell you exactly what to do but couldn't do it themselves. With MCP, they can send emails, read files, book meetings — all by themselves. You just ask, and they handle the execution."
+              desc="A consultant with hands. They can do it, not just tell you how."
               accent={AC}
             />
           </div>

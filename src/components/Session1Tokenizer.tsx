@@ -387,10 +387,10 @@ export default function Session1Tokenizer() {
       {/* ── The Analogy ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          The Autocomplete Analogy
+          Autocomplete
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Your phone suggests the next word when you type. &ldquo;I love ___&rdquo; suggests &ldquo;you&rdquo;, &ldquo;it&rdquo;, &ldquo;this&rdquo;. An LLM is exactly that, but billions of times bigger, trained on almost everything on the internet.
+          Phone autocomplete, scaled to the internet. &ldquo;I love ___&rdquo; &rarr; &ldquo;you&rdquo;. Billions of examples.
         </p>
         <AnimatedPipeline accent={AC} stages={[
           { icon: '✍️', label: 'You Type', desc: '"The cat sat on the"' },
@@ -751,7 +751,7 @@ export default function Session1Tokenizer() {
             <MentalModel
               emoji="..."
               title="Your Mental Model"
-              desc="Think of an LLM as a super-powered autocomplete. It has read most of the internet and is really good at guessing what word comes next. That is it. Everything else, coding, reasoning, creativity, is just that one skill applied over and over."
+              desc="Super-powered autocomplete. Guesses next word. That's it."
               accent={AC}
             />
           </div>

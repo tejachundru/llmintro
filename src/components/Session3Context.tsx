@@ -340,7 +340,7 @@ export default function Session3Context() {
     <section id="s3" style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 2rem 6rem' }}>
       {/* ── Header + Intro ── */}
       <RevealSection>
-        <SectionHeader num="03" tag="Topic 3" title="The Working Desk" accentColor={AC} borderColor={`${AC}44`} />
+        <SectionHeader num="03" tag="Topic 3" title="Context" accentColor={AC} borderColor={`${AC}44`} />
         <p style={{ color: 'var(--muted)', maxWidth: 640, fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)' }}>
           Have you ever chatted with an LLM, and after a while it <strong style={{ color: 'var(--text)' }}>forgot what you said earlier?</strong>
         </p>
@@ -378,11 +378,10 @@ export default function Session3Context() {
       {/* ── The Analogy ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          A Desk, Not a Brain
+          The Desk
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Humans have long-term memory. LLMs have <strong style={{ color: 'var(--text)' }}>NO memory</strong> between conversations.
-          Each time you chat, it&apos;s a fresh desk. Everything it knows about your task must fit on that desk <strong style={{ color: 'var(--text)' }}>right now</strong>.
+          No memory between conversations. Each chat = fresh desk. Only what&apos;s on it exists.
         </p>
         <AnimatedPipeline accent={AC} stages={[
           { icon: '🪑', label: 'Empty Desk', desc: 'Fresh conversation, 0 tokens' },
@@ -556,7 +555,7 @@ export default function Session3Context() {
             <MentalModel
               emoji="🪟"
               title="Your Mental Model"
-              desc="Think of the context window as a desk. You can only work with papers currently on your desk. Filed away yesterday? Can't access it. Every new conversation = clean desk."
+              desc="A desk. Only what's on it exists. Each chat = clean desk."
               accent={AC}
             />
           </div>

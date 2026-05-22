@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const SESSION_LINKS = [
-  { path: '/1', label: 'The Prediction Machine', num: '01' },
-  { path: '/2', label: 'The Attention Engine', num: '02' },
-  { path: '/3', label: 'The Working Desk', num: '03' },
-  { path: '/4', label: 'The Open-Book Exam', num: '04' },
-  { path: '/5', label: 'The Art of the Ask', num: '05' },
-  { path: '/6', label: 'From Talk to Action', num: '06' },
+  { path: '/1', label: 'LLMs', num: '01' },
+  { path: '/2', label: 'Attention', num: '02' },
+  { path: '/3', label: 'Context', num: '03' },
+  { path: '/4', label: 'RAG', num: '04' },
+  { path: '/5', label: 'Prompting', num: '05' },
+  { path: '/6', label: 'MCP', num: '06' },
 ];
 
 export default function Footer() {

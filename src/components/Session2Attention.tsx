@@ -453,12 +453,10 @@ export default function Session2Attention() {
       {/* ── The Analogy ── */}
       <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '1rem', marginTop: 0 }}>
-          The Spotlight Analogy
+          Spotlight
         </p>
         <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '2rem' }}>
-          Imagine you&apos;re in a dark room full of people. Someone says &ldquo;The cat sat on the mat.&rdquo;
-          Your brain instantly connects &ldquo;cat&rdquo; with &ldquo;sat&rdquo; — the cat is doing the action.
-          <strong style={{ color: 'var(--text)' }}> Attention is the model&apos;s spotlight</strong> — it shines brighter on important connections.
+          Every word shines a spotlight on every other word. The brighter the beam, the stronger the connection.
         </p>
         <AnimatedPipeline accent={AC} stages={[
           { icon: '📝', label: 'Input Words', desc: 'The cat sat on the mat' },
@@ -606,7 +604,7 @@ export default function Session2Attention() {
             <MentalModel
               emoji="🔦"
               title="Your Mental Model"
-              desc="Think of attention as a spotlight system. Every word shines a spotlight on every other word. 'Cat' shines bright on 'sat' (who's doing what?) and 'mat' (where?). The brighter the light, the more information gets shared."
+              desc="Every word shines a spotlight on every other word. Bright beam = strong connection."
               accent={AC}
             />
           </div>
