@@ -25,64 +25,13 @@ export default function Footer() {
     return () => obs.disconnect();
   }, []);
 
-  const currentIdx = SESSION_LINKS.findIndex(s => s.path === location.pathname);
-  const prev = currentIdx > 0 ? SESSION_LINKS[currentIdx - 1] : null;
-  const next = currentIdx >= 0 && currentIdx < SESSION_LINKS.length - 1 ? SESSION_LINKS[currentIdx + 1] : null;
-
   return (
     <footer ref={ref} style={{
       borderTop: '1px solid var(--border)',
-      padding: '3rem 2rem 6rem',
+      padding: '3rem 2rem 1rem',
       marginTop: 'auto',
     }}>
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
-        {/* Session nav arrows */}
-        {prev && next && (
-          <div style={{
-            display: 'flex', gap: '1rem', marginBottom: '2.5rem',
-            justifyContent: 'space-between',
-            opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(16px)',
-            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-          }}>
-            <Link to={prev.path} style={{
-              display: 'flex', alignItems: 'center', gap: '.5rem',
-              padding: '.65rem 1rem', borderRadius: 10, textDecoration: 'none',
-              background: 'var(--bg2)', border: '1px solid var(--border)',
-              color: 'var(--muted)', fontSize: 'var(--font-caption)',
-              fontFamily: 'var(--font-mono)', transition: 'all .2s',
-              flex: 1, maxWidth: 300,
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)'; }}
-            >
-              <span>←</span>
-              <div>
-                <div style={{ fontSize: 'var(--font-micro)', opacity: 0.6 }}>Previous</div>
-                <div>{prev.num} {prev.label}</div>
-              </div>
-            </Link>
-            <Link to={next.path} style={{
-              display: 'flex', alignItems: 'center', gap: '.5rem',
-              padding: '.65rem 1rem', borderRadius: 10, textDecoration: 'none',
-              background: 'var(--bg2)', border: '1px solid var(--border)',
-              color: 'var(--muted)', fontSize: 'var(--font-caption)',
-              fontFamily: 'var(--font-mono)', transition: 'all .2s',
-              flex: 1, maxWidth: 300, textAlign: 'right',
-              justifyContent: 'flex-end',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border2)'; e.currentTarget.style.color = 'var(--text)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)'; }}
-            >
-              <div>
-                <div style={{ fontSize: 'var(--font-micro)', opacity: 0.6 }}>Next</div>
-                <div>{next.num} {next.label}</div>
-              </div>
-              <span>→</span>
-            </Link>
-          </div>
-        )}
-
         {/* Session index */}
         <div style={{
           display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -113,15 +62,6 @@ export default function Footer() {
               </Link>
             );
           })}
-        </div>
-
-        <div style={{
-          textAlign: 'center', color: 'var(--muted)', fontSize: 'var(--font-caption)',
-          paddingTop: '1.5rem', borderTop: '1px solid var(--border)',
-          opacity: visible ? 1 : 0,
-          transition: 'opacity 0.5s 0.3s ease',
-        }}>
-          LLMs Made Simple — Team Training · 6 Sessions
         </div>
       </div>
     </footer>
