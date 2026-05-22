@@ -18,19 +18,19 @@
 :root {
 
   /* ── Palette ── */
-  --bg:       #0a0c0f;
-  --bg2:      #12151a;
-  --bg3:      #1a1f28;
-  --border:   #ffffff14;
-  --border2:  #ffffff22;
-  --text:     #e8eaf0;
-  --muted:    #7a8099;
-  --accent:   #4f9eff;
-  --accent2:  #a78bfa;
-  --accent3:  #34d399;
-  --accent4:  #fb923c;
-  --accent5:  #f472b6;
-  --accent6:  #63dcb4;
+  --bg:       #f5f6fa;
+  --bg2:      #ffffff;
+  --bg3:      #eef0f4;
+  --border:   #e2e4eb;
+  --border2:  #d1d4dd;
+  --text:     #1a1d29;
+  --muted:    #5c6277;
+  --accent:   #2563eb;
+  --accent2:  #7c3aed;
+  --accent3:  #047857;
+  --accent4:  #c2410c;
+  --accent5:  #be185d;
+  --accent6:  #0f766e;
 
   /* ── Legacy Tokens (aliases for session components) ── */
   --primary:       var(--bg2);
@@ -48,17 +48,17 @@
   /* ── Typography Scale (increased for readability) ──
      micro → label → caption → body → body-lg → sub-heading → heading → section-title → hero
   */
-  --font-micro:        11px;
-  --font-label:        12px;
-  --font-caption:      13px;
-  --font-body:         15px;
-  --font-body-lg:      16px;
-  --font-sub-heading:  18px;
-  --font-heading:      22px;
-  --font-section-title: 26px;
-  --font-hero:         32px;
-  --font-hero-display: 48px;
-  --font-emoji:        28px;
+  --font-micro:        12px;
+  --font-label:        13px;
+  --font-caption:      14px;
+  --font-body:         17px;
+  --font-body-lg:      18px;
+  --font-sub-heading:  20px;
+  --font-heading:      26px;
+  --font-section-title: 30px;
+  --font-hero:         36px;
+  --font-hero-display: 56px;
+  --font-emoji:        32px;
 
   /* Line-heights */
   --lh-tight:    1.2;

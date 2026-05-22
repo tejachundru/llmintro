@@ -7,7 +7,7 @@ import {
 } from './shared';
 
 const MAX_CTX = 128000;
-const AC = '#059669';
+const AC = '#047857';
 
 /* ─── Context Calculator (inline demo) ─── */
 
@@ -15,7 +15,7 @@ function ContextCalculator() {
   const [items, setItems] = useState<{ label: string; tokens: number }[]>([]);
   const total = items.reduce((s, i) => s + i.tokens, 0);
   const pct = Math.min((total / MAX_CTX) * 100, 100);
-  const barColor = pct < 50 ? '#059669' : pct < 80 ? '#ea580c' : '#f87171';
+  const barColor = pct < 50 ? '#047857' : pct < 80 ? '#c2410c' : '#dc2626';
 
   const presets = [
     { label: 'Short Instruction', tokens: 200, icon: '📋' },
@@ -100,7 +100,7 @@ function ContextCalculator() {
           <div style={{
             padding: '.65rem 1rem', borderRadius: 8,
             background: 'rgba(251,146,60,.08)', border: '1px solid rgba(251,146,60,.25)',
-            color: '#ea580c', fontSize: 'var(--font-caption)', animation: 'fadeIn .4s ease',
+            color: '#dc2626', fontSize: 'var(--font-caption)', animation: 'fadeIn .4s ease',
           }}>
             ⚠️ Context is {pct.toFixed(0)}% full! The model may forget earlier information.
           </div>
@@ -124,9 +124,9 @@ function CostCalculator() {
   const [model, setModel] = useState<'gpt4' | 'claude' | 'gemini'>('gpt4');
 
   const pricing = {
-    gpt4: { input: 10, output: 30, label: 'GPT-4 Turbo', color: '#4f9eff' },
-    claude: { input: 8, output: 24, label: 'Claude 3', color: '#a78bfa' },
-    gemini: { input: 3.5, output: 10.5, label: 'Gemini 1.5', color: '#34d399' },
+    gpt4: { input: 10, output: 30, label: 'GPT-4 Turbo', color: '#2563eb' },
+    claude: { input: 8, output: 24, label: 'Claude 3', color: '#7c3aed' },
+    gemini: { input: 3.5, output: 10.5, label: 'Gemini 1.5', color: '#047857' },
   };
 
   const p = pricing[model];
@@ -214,7 +214,7 @@ function CostCalculator() {
           fontSize: 'var(--font-label)', fontFamily: 'var(--font-mono)', color: 'var(--muted)',
         }}>
           <strong style={{ color: AC }}>{p.label}</strong>: ${(p.input / 1000).toFixed(4)}/1K input · ${(p.output / 1000).toFixed(4)}/1K output<br />
-          Total: <strong style={{ color: totalCost > 50 ? '#f87171' : totalCost > 10 ? '#fb923c' : AC }}>
+          Total: <strong style={{ color: totalCost > 50 ? '#dc2626' : totalCost > 10 ? '#c2410c' : AC }}>
             ${totalCost.toFixed(4)}
           </strong> ({inputTokens.toLocaleString()} in + {outputTokens.toLocaleString()} out)
         </div>
@@ -275,7 +275,7 @@ function ConversationSimulator() {
           <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
             Conversation simulator
           </div>
-          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: simTokenCount > MAX_CTX * 0.8 ? '#ea580c' : 'var(--muted)' }}>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: simTokenCount > MAX_CTX * 0.8 ? '#dc2626' : 'var(--muted)' }}>
             {simTokenCount.toLocaleString()} tokens
           </div>
         </div>
@@ -430,7 +430,7 @@ export default function Session3Context() {
       </RevealSection>
 
       {/* ── Playground ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -452,17 +452,20 @@ export default function Session3Context() {
             Double the context → <strong style={{ color: 'var(--text)' }}>4x the cost</strong>.
           </ConceptBlock>
 
-          <CodeExample accent={AC} code={`// Attention cost explosion:
-// 1K tokens → 1M connections
-// 4K tokens → 16M connections
-// 32K tokens → 1B connections
-// 128K tokens → 16B connections
+          <CodeExample accent={AC} code={`// Attention: every word pairs with every other word
+// connections = n × n / 2  (upper triangle + diagonal)
 
-// Doubling tokens = QUADRUPLING cost!`} />
+// n=1K   →  500K connections   (paying ~0.5¢)
+// n=4K   →  8M connections     (paying ~4¢)
+// n=32K  →  512M connections   (paying ~32¢)
+// n=128K →  8B connections     (paying ~$2.00)
+
+// Doubling token count = 4× more compute
+// This is why 1M-token models are so expensive`} />
 
           <StepBuilder accent={AC} steps={[
-            { label: 'The KV Cache trick', detail: 'During generation, the model caches Key and Value matrices from previous tokens. This means it only computes the new token\'s Query, making generation O(n) per step instead of O(n²).' },
-            { label: 'Context = Money', detail: 'APIs charge for both input AND output tokens. A 128K input on GPT-4 Turbo costs ~$1.92 before the model says a word. Always estimate token cost before sending large prompts.' },
+            { label: 'The KV Cache trick', detail: 'During generation, the model stores Key and Value vectors from previous tokens in a cache. For each new token, it only computes the new Query and scores it against cached Keys. This makes generation O(n) per step instead of O(n²) — without the cache, generating a 1000-word answer would recompute attention for every previous word each time.' },
+            { label: 'Context = Money', detail: 'APIs charge for BOTH input AND output tokens. A 128K input on GPT-4 Turbo costs ~$1.92 before the model says a word. Always estimate token cost before sending large prompts. The KV cache also consumes GPU memory proportional to context length — another hidden cost.' },
           ]} />
         </SubSection>
       </RevealSection>
@@ -474,7 +477,7 @@ export default function Session3Context() {
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           {[
-            { title: 'Remember the edges', desc: 'Research shows LLMs remember info at the beginning and end really well — but often MISS info buried in the middle. Put important stuff first or last.' },
+            { title: 'Remember the edges', desc: 'The "Lost in the Middle" paper (Liu et al., 2023) showed that LLM performance drops sharply when relevant info is in the middle of the context — accuracy can fall from ~80% to ~40%. Put important facts first or last.' },
             { title: 'No long-term memory', desc: 'An LLM can only work with what\'s on the desk right now. Yesterday\'s conversation? Gone. A document you didn\'t paste in? Invisible.' },
             { title: 'Be surgical', desc: 'Don\'t dump everything in. Irrelevant info dilutes attention and can make answers WORSE. Include only what\'s needed.' },
           ].map((card, i) => (
@@ -487,7 +490,7 @@ export default function Session3Context() {
             </div>
           ))}
         </div>
-        <WarningBox accent="#ea580c">
+        <WarningBox accent="#dc2626">
           <strong>Practical tip:</strong> Put the most important information at the <strong style={{ color: 'var(--text)' }}>beginning or end</strong> of your prompt.
           If using RAG, place retrieved documents before the question. If instructions matter, repeat them at the end.
         </WarningBox>
@@ -537,7 +540,7 @@ export default function Session3Context() {
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -561,7 +564,7 @@ export default function Session3Context() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="The context window is an LLM's working memory — a fixed-size desk. Everything must fit here. Larger windows cost much more (4x for 2x size). Models remember start and end best, losing info in the middle. Be surgical about what you put in context."
@@ -569,7 +572,7 @@ export default function Session3Context() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           'What happens to information outside the context window?',
           'Why does doubling the context quadruple the cost?',
@@ -580,7 +583,7 @@ export default function Session3Context() {
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

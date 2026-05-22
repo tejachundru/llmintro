@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
-  ConceptBlock, FlowDiagram, InfoBox,
+  ConceptBlock, FlowDiagram, InfoBox, CodeExample,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   StepBuilder, AnimatedPipeline,
   WarningBox,
 } from './shared';
 
-const AC = '#0891b2';
+const AC = '#0f766e';
 
 interface McpStep {
   role: 'user' | 'llm' | 'tool';
@@ -220,7 +220,7 @@ export default function Session6MCP() {
       </RevealSection>
 
       {/* ── Why This Matters ── */}
-      <RevealSection style={{ marginBottom: '2rem' }}>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <ConceptBlock title="Why should you care?" accent={AC}>
           MCP is the <strong style={{ color: 'var(--text)' }}>biggest shift after ChatGPT</strong> itself. Before MCP, every AI-to-tool integration was custom-built. MCP is an open standard — build one server, any AI can use it. This is how AI goes from chatbots to actual assistants that do real work across your tools.
         </ConceptBlock>
@@ -301,10 +301,37 @@ export default function Session6MCP() {
           { label: 'Tool Runs', sub: 'Action happens' },
           { label: 'Result Back', sub: 'LLM continues' },
         ]} />
+        <div style={{ marginTop: '1.5rem' }}>
+          <CodeExample accent={AC} code={`// MCP is built on JSON-RPC. Here's what the LLM sends:
+// → LLM → MCP Server: "Show me events next week"
+{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "list_events",
+    "arguments": { "timeMin": "2025-05-19T00:00:00Z" }
+  },
+  "id": 1
+}
+
+// ← MCP Server → LLM: "Here are your events"
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "content": [
+      { "type": "text", "text": "1. Mon 10am — Sprint Planning (Zoom)" }
+    ],
+    "isError": false
+  },
+  "id": 1
+}
+
+// The LLM calls tools like functions. The server does the real work.`} />
+        </div>
       </RevealSection>
 
       {/* ── Playground ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -462,7 +489,7 @@ export default function Session6MCP() {
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -486,7 +513,7 @@ export default function Session6MCP() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="MCP connects LLMs to real-world tools (email, Drive, calendar, databases). The LLM decides which tool to call, calls it, gets the result, and continues. It can chain multiple tools together. MCP is an open standard — build one server, any AI can use it. This turns LLMs from talkers into doers."
@@ -494,7 +521,7 @@ export default function Session6MCP() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           "What problem does MCP solve? Why can't a normal LLM send an email?",
           'Walk through the steps: what happens when you ask "Schedule a meeting for tomorrow at 3pm"?',
@@ -505,7 +532,7 @@ export default function Session6MCP() {
       </RevealSection>
 
       {/* ── What Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

@@ -2,13 +2,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const SESSIONS = [
-  { path: '/', label: 'Home', num: '⌂', accent: '#4f9eff' },
-  { path: '/1', label: 'The Prediction Machine', num: '01', accent: '#4f9eff' },
-  { path: '/2', label: 'The Attention Engine', num: '02', accent: '#a78bfa' },
-  { path: '/3', label: 'The Working Desk', num: '03', accent: '#34d399' },
-  { path: '/4', label: 'The Open-Book Exam', num: '04', accent: '#fb923c' },
-  { path: '/5', label: 'The Art of the Ask', num: '05', accent: '#f472b6' },
-  { path: '/6', label: 'From Talk to Action', num: '06', accent: '#63dcb4' },
+  { path: '/', label: 'Home', num: '⌂', accent: '#2563eb' },
+  { path: '/1', label: 'The Prediction Machine', num: '01', accent: '#2563eb' },
+  { path: '/2', label: 'The Attention Engine', num: '02', accent: '#7c3aed' },
+  { path: '/3', label: 'The Working Desk', num: '03', accent: '#047857' },
+  { path: '/4', label: 'The Open-Book Exam', num: '04', accent: '#c2410c' },
+  { path: '/5', label: 'The Art of the Ask', num: '05', accent: '#be185d' },
+  { path: '/6', label: 'From Talk to Action', num: '06', accent: '#0f766e' },
 ];
 
 export default function AppNav() {
@@ -31,7 +31,7 @@ export default function AppNav() {
     <>
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? 'rgba(10,12,15,.92)' : 'transparent',
+        background: scrolled ? 'rgba(245,246,250,.92)' : 'transparent',
         backdropFilter: scrolled ? 'blur(16px)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(16px)' : 'none',
         borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
@@ -100,7 +100,7 @@ export default function AppNav() {
       {/* Mobile menu dropdown */}
       <div style={{
         position: 'fixed', top: 56, left: 0, right: 0, zIndex: 99,
-        background: 'rgba(10,12,15,.98)', backdropFilter: 'blur(16px)',
+        background: 'rgba(245,246,250,.98)', backdropFilter: 'blur(16px)',
         borderBottom: '1px solid var(--border)',
         padding: '.5rem 1.5rem 1rem',
         pointerEvents: menuOpen ? 'auto' : 'none',
@@ -145,7 +145,7 @@ export default function AppNav() {
           <div style={{
             height: '100%',
             width: `${(activeIdx / (SESSIONS.length - 1)) * 100}%`,
-            background: `linear-gradient(90deg, #4f9eff, ${active.accent})`,
+            background: `linear-gradient(90deg, #2563eb, ${active.accent})`,
             transition: 'width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }} />
         )}

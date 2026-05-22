@@ -4,10 +4,10 @@ import {
   WarningBox,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel,
   StepBuilder, AnimatedPipeline,
-  ConceptBlock,
+  ConceptBlock, ProbabilityBars,
 } from './shared';
 
-const AC = '#e11d48';
+const AC = '#be185d';
 
 interface Layer {
   type: 'sys' | 'ctx' | 'user' | 'out';
@@ -136,43 +136,100 @@ function PromptBuilder() {
 
 function TemperatureDemo() {
   const [temp, setTemp] = useState(0.7);
-  const outputs: Record<number, string[]> = {
-    0: ['The cat sat on the mat.', 'The cat sat on the mat.', 'The cat sat on the mat.'],
-    3: ['The cat lounged on the mat.', 'The cat rested on the rug.', 'The feline sprawled across the carpet.'],
-    7: ['The cat napped lazily.', 'A feline snoozed in the sun.', 'Whiskers curled up somewhere warm.'],
-    10: ['The dragon soared through clouds.', 'A spaceship hummed in orbit.', 'Quantum particles danced in chaos.'],
+  const candidates = [
+    { label: 'mat', logit: 4.2, color: '#2563eb' },
+    { label: 'floor', logit: 2.8, color: '#7c3aed' },
+    { label: 'couch', logit: 1.5, color: '#047857' },
+    { label: 'chair', logit: 0.9, color: '#c2410c' },
+    { label: 'table', logit: 0.3, color: '#be185d' },
+    { label: 'rug', logit: -0.5, color: '#0f766e' },
+  ];
+
+  const softmax = (logits: number[], temperature: number) => {
+    const scaled = logits.map(l => l / Math.max(temperature, 0.01));
+    const expVals = scaled.map(l => Math.exp(l));
+    const sum = expVals.reduce((a, b) => a + b, 0);
+    return expVals.map(e => e / sum);
   };
-  const closestTemp = [0, 3, 7, 10].reduce((prev, curr) => Math.abs(curr - temp * 10) < Math.abs(prev - temp * 10) ? curr : prev);
+
+  const probs = softmax(candidates.map(c => c.logit), temp);
+  const probItems = candidates.map((c, i) => ({ label: c.label, prob: probs[i], color: c.color }));
+  const topIdx = probs.indexOf(Math.max(...probs));
+  const topWord = candidates[topIdx].label;
+
+  const sampleOutputs = (t: number) => {
+    const p = softmax(candidates.map(c => c.logit), t);
+    const results: string[] = [];
+    for (let s = 0; s < 3; s++) {
+      const r = Math.random();
+      let cum = 0;
+      let chosen = candidates[candidates.length - 1].label;
+      for (let i = 0; i < p.length; i++) {
+        cum += p[i];
+        if (r < cum) { chosen = candidates[i].label; break; }
+      }
+      results.push('The cat sat on the ' + chosen + '.');
+    }
+    return results;
+  };
+
+  const outputs = sampleOutputs(temp);
 
   return (
     <div style={{ marginBottom: '2.5rem' }}>
       <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '1rem' }}>
-        Drag the slider to see how temperature affects creativity:
+        Drag the slider — see how temperature reshapes the probability distribution:
       </div>
       <div style={{
         background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
         padding: '1.25rem',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>Deterministic</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>
+            temp = 0<br />deterministic
+          </span>
           <input
-            type="range" min="0" max="1" step="0.1" value={temp}
+            type="range" min="0" max="2" step="0.05" value={temp}
             onChange={e => setTemp(Number(e.target.value))}
             style={{ flex: 1, accentColor: AC }}
             aria-label="Temperature slider"
           />
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>Creative</span>
-        </div>
-        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)', color: AC, fontWeight: 600 }}>
-            Temperature: {temp.toFixed(1)}
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)', color: 'var(--muted)' }}>
+            temp = 2<br />random
           </span>
         </div>
-        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.5rem' }}>
-          Prompt: &ldquo;The cat sat on the___&rdquo;
+
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: 'var(--muted)', marginBottom: '.5rem' }}>
+          Raw logits &rarr; <strong style={{ color: AC }}>softmax(logits / {temp.toFixed(2)})</strong> &rarr; probabilities:
+        </div>
+        <div style={{ marginBottom: '.75rem' }}>
+          <div style={{ fontSize: 'var(--font-micro)', fontFamily: 'var(--font-mono)', color: 'var(--muted)', marginBottom: '.15rem' }}>
+            Raw logits: [{candidates.map(c => c.logit.toFixed(1)).join(', ')}]
+          </div>
+        </div>
+
+        <ProbabilityBars items={probItems} accent={AC} height={16} />
+
+        <div style={{
+          marginTop: '.75rem', padding: '.5rem .75rem', borderRadius: 8,
+          background: AC + '0a', border: `1px solid ${AC}33`,
+          fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)', color: 'var(--text)',
+          textAlign: 'center',
+        }}>
+          {temp < 0.3 ? (
+            <span>Top choice: <strong style={{ color: AC }}>&ldquo;{topWord}&rdquo;</strong> ({(Math.max(...probs) * 100).toFixed(0)}% — almost deterministic)</span>
+          ) : temp > 1.2 ? (
+            <span>Probabilities nearly flat — model is <strong style={{ color: '#c2410c' }}>picking almost randomly</strong></span>
+          ) : (
+            <span>Top choice: <strong style={{ color: AC }}>&ldquo;{topWord}&rdquo;</strong> ({(Math.max(...probs) * 100).toFixed(0)}% of probability mass)</span>
+          )}
+        </div>
+
+        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginTop: '1rem', marginBottom: '.5rem' }}>
+          3 random samples at temperature {temp.toFixed(2)}:
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '.35rem' }}>
-          {outputs[closestTemp].map((out, i) => (
+          {outputs.map((out, i) => (
             <div key={i} style={{
               padding: '.5rem .75rem', borderRadius: 6,
               background: 'var(--bg3)', border: '1px solid var(--border)',
@@ -202,7 +259,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── Why This Matters ── */}
-      <RevealSection style={{ marginBottom: '2rem' }}>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <ConceptBlock title="Why should you care?" accent={AC}>
           Prompting is the <strong style={{ color: 'var(--text)' }}>#1 skill</strong> for getting value from LLMs. It doesn&apos;t require coding. It doesn&apos;t require math. It just requires clear thinking and a few techniques. A well-written prompt can be the difference between &ldquo;this AI is useless&rdquo; and &ldquo;this AI just saved me 2 hours.&rdquo;
         </ConceptBlock>
@@ -227,7 +284,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── Playground ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -380,7 +437,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -404,7 +461,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="Prompt engineering is the skill of crafting inputs that reliably produce great outputs. Structure prompts as: System Instructions + Context + Task + Format. Use Chain of Thought for reasoning, few-shot examples for patterns, and temperature to control creativity. Be specific — the model does exactly what you ask."
@@ -412,7 +469,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           'What are the 4 parts of a well-structured prompt?',
           'How does "Chain of Thought" prompting improve accuracy?',
@@ -423,7 +480,7 @@ export default function Session5Prompting() {
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
   RevealSection, SectionHeader, SubSection,
-  ConceptBlock, WarningBox, InfoBox,
+  ConceptBlock, WarningBox, InfoBox, CodeExample,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   AnimatedPipeline,
 } from './shared';
 
-const AC = '#ea580c';
+const AC = '#c2410c';
 
 const RAG_STEPS = [
   { num: '01', icon: '📄', title: 'Load Documents', sub: 'PDFs, web pages, databases',
@@ -131,7 +131,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── Why This Matters ── */}
-      <RevealSection style={{ marginBottom: '2rem' }}>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <ConceptBlock title="Why should you care?" accent={AC}>
           Without RAG, an LLM can only tell you what it memorized from the internet. With RAG, it can answer questions about <strong style={{ color: 'var(--text)' }}>your</strong> internal docs, <strong style={{ color: 'var(--text)' }}>your</strong> codebase, <strong style={{ color: 'var(--text)' }}>your</strong> customer data — without being retrained. This is how companies build customer support bots, document Q&A, and code assistants that actually work.
         </ConceptBlock>
@@ -154,7 +154,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── Playground ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -276,6 +276,21 @@ export default function Session4RAG() {
           An embedding converts text into a list of ~1,500 numbers. Texts with <strong style={{ color: 'var(--text)' }}>similar meaning</strong> get
           <strong style={{ color: 'var(--text)' }}> similar numbers</strong>. This is how the vector database finds relevant chunks.
         </p>
+        <div style={{ marginBottom: '2rem' }}>
+          <CodeExample accent={AC} code={`// Cosine similarity — the math behind semantic search:
+// similarity(A, B) = dot(A, B) / (|A| × |B|)
+// Range: -1 (opposite) to +1 (identical)
+
+// "heart attack" vs "cardiac arrest":
+// dot = 0.82×0.79 + 0.14×0.16 + 0.91×0.88 + ... ≈ 0.92
+// → similarity = 0.92 (very close — same meaning)
+
+// "heart attack" vs "car repair":
+// dot = 0.82×0.12 + 0.14×0.85 + 0.91×0.23 + ... ≈ 0.35
+// → similarity = 0.35 (distant — different topics)
+
+// Vector DB finds top-k chunks with highest cosine similarity`} />
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
           {[
             { title: '"heart attack"', desc: '[0.82, 0.14, 0.91, ...]', note: 'High medical scores' },
@@ -334,7 +349,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -358,7 +373,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="RAG solves the 'LLM doesn't know your data' problem by retrieving relevant documents before generating an answer. The pipeline: load docs, chunk them, convert to embeddings, store in a vector DB, retrieve at query time, and generate grounded answers. It's cheaper than fine-tuning, always up-to-date, and provides citations."
@@ -366,7 +381,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           'Why can\'t an LLM answer questions about your internal documents without RAG?',
           'What are the 6 steps in a RAG pipeline?',
@@ -377,7 +392,7 @@ export default function Session4RAG() {
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

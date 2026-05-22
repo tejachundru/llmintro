@@ -1,14 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
   RevealSection, SectionHeader, SubSection, WarningBox,
-  KeyPoint, FlowDiagram, ConceptBlock,
+  KeyPoint, FlowDiagram, ConceptBlock, CodeExample,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel,
   ProbabilityBars, StepBuilder, ToggleCompare, AnimatedPipeline,
   LiveCounter, InteractiveSlider,
 } from './shared';
 
 const TOKEN_COLORS = [
-  { bg: 'rgba(79,158,255,.15)', border: 'rgba(79,158,255,.4)' },
+  { bg: 'rgba(37,99,235,.15)', border: 'rgba(37,99,235,.4)' },
   { bg: 'rgba(167,139,250,.15)', border: 'rgba(167,139,250,.4)' },
   { bg: 'rgba(52,211,153,.15)', border: 'rgba(52,211,153,.4)' },
   { bg: 'rgba(251,146,60,.15)', border: 'rgba(251,146,60,.4)' },
@@ -31,7 +31,7 @@ function naiveTokenize(text: string): string[] {
   return tokens.filter(t => t.length > 0);
 }
 
-const AC = '#4f9eff';
+const AC = '#2563eb';
 
 /* ─── Why This Matters ─── */
 
@@ -176,20 +176,29 @@ function GenerationDemo() {
           <button onClick={reset} style={{
             padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
             background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
-            cursor: 'pointer', fontFamily: 'var(--font-mono)',
-          }}>↺ Replay</button>
+            cursor: 'pointer', fontFamily: 'var(--font-mono)', transition: 'all .2s',
+          }}
+            onMouseEnter={e => { const el = e.currentTarget; el.style.background = AC + '0a'; el.style.borderColor = AC + '33'; }}
+            onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'var(--bg3)'; el.style.borderColor = 'var(--border)'; }}
+          >↺ Replay</button>
           <button onClick={tick} style={{
             padding: '.4rem .9rem', borderRadius: 8, border: '1px solid var(--border)',
             background: 'var(--bg3)', color: 'var(--text)', fontSize: 'var(--font-caption)',
-            cursor: 'pointer', fontFamily: 'var(--font-mono)',
-          }}>⏭ Step</button>
+            cursor: 'pointer', fontFamily: 'var(--font-mono)', transition: 'all .2s',
+          }}
+            onMouseEnter={e => { const el = e.currentTarget; el.style.background = AC + '0a'; el.style.borderColor = AC + '33'; }}
+            onMouseLeave={e => { const el = e.currentTarget; el.style.background = 'var(--bg3)'; el.style.borderColor = 'var(--border)'; }}
+          >⏭ Step</button>
           <button onClick={() => setShowProbs(s => !s)} style={{
             padding: '.4rem .9rem', borderRadius: 8, cursor: 'pointer',
             border: `1px solid ${showProbs ? AC + '55' : 'var(--border)'}`,
             background: showProbs ? AC + '15' : 'var(--bg3)',
             color: showProbs ? AC : 'var(--muted)',
-            fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)',
-          }}>
+            fontSize: 'var(--font-caption)', fontFamily: 'var(--font-mono)', transition: 'all .2s',
+          }}
+            onMouseEnter={e => { if (!showProbs) { const el = e.currentTarget; el.style.background = AC + '0a'; el.style.borderColor = AC + '33'; }}}
+            onMouseLeave={e => { if (!showProbs) { const el = e.currentTarget; el.style.background = 'var(--bg3)'; el.style.borderColor = 'var(--border)'; }}}
+          >
             {showProbs ? '📊 Hide probs' : '📊 Show probs'}
           </button>
         </div>
@@ -204,33 +213,33 @@ function ProbabilityDemo() {
   const [word, setWord] = useState('The cat sat on the');
   const predictions: Record<string, { label: string; prob: number; color: string }[]> = {
     'The cat sat on the': [
-      { label: 'mat', prob: 0.42, color: '#4f9eff' },
-      { label: 'floor', prob: 0.18, color: '#a78bfa' },
-      { label: 'couch', prob: 0.12, color: '#34d399' },
-      { label: 'chair', prob: 0.08, color: '#fb923c' },
-      { label: 'bed', prob: 0.06, color: '#f472b6' },
+      { label: 'mat', prob: 0.42, color: '#2563eb' },
+      { label: 'floor', prob: 0.18, color: '#7c3aed' },
+      { label: 'couch', prob: 0.12, color: '#047857' },
+      { label: 'chair', prob: 0.08, color: '#c2410c' },
+      { label: 'bed', prob: 0.06, color: '#be185d' },
     ],
     'I love to eat': [
-      { label: 'pizza', prob: 0.35, color: '#4f9eff' },
-      { label: 'food', prob: 0.22, color: '#a78bfa' },
-      { label: 'ice cream', prob: 0.14, color: '#34d399' },
-      { label: 'sushi', prob: 0.09, color: '#fb923c' },
+      { label: 'pizza', prob: 0.35, color: '#2563eb' },
+      { label: 'food', prob: 0.22, color: '#7c3aed' },
+      { label: 'ice cream', prob: 0.14, color: '#047857' },
+      { label: 'sushi', prob: 0.09, color: '#c2410c' },
     ],
     'The capital of India is': [
-      { label: 'New Delhi', prob: 0.78, color: '#4f9eff' },
-      { label: 'Mumbai', prob: 0.08, color: '#a78bfa' },
-      { label: 'India', prob: 0.04, color: '#34d399' },
+      { label: 'New Delhi', prob: 0.78, color: '#2563eb' },
+      { label: 'Mumbai', prob: 0.08, color: '#7c3aed' },
+      { label: 'India', prob: 0.04, color: '#047857' },
     ],
     'Python is a': [
-      { label: 'programming language', prob: 0.65, color: '#4f9eff' },
-      { label: 'snake', prob: 0.12, color: '#a78bfa' },
-      { label: 'language', prob: 0.08, color: '#34d399' },
+      { label: 'programming language', prob: 0.65, color: '#2563eb' },
+      { label: 'snake', prob: 0.12, color: '#7c3aed' },
+      { label: 'language', prob: 0.08, color: '#047857' },
     ],
     'She opened the': [
-      { label: 'door', prob: 0.38, color: '#4f9eff' },
-      { label: 'book', prob: 0.15, color: '#a78bfa' },
-      { label: 'window', prob: 0.12, color: '#34d399' },
-      { label: 'box', prob: 0.09, color: '#fb923c' },
+      { label: 'door', prob: 0.38, color: '#2563eb' },
+      { label: 'book', prob: 0.15, color: '#7c3aed' },
+      { label: 'window', prob: 0.12, color: '#047857' },
+      { label: 'box', prob: 0.09, color: '#c2410c' },
     ],
   };
 
@@ -326,8 +335,8 @@ function TextToNumbersDemo() {
                 width: 32, height: 32, borderRadius: 6,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
-                background: `rgba(79,158,255,${v * 0.4})`,
-                border: '1px solid rgba(79,158,255,0.3)',
+                background: `rgba(37,99,235,${v * 0.4})`,
+                border: '1px solid rgba(37,99,235,0.3)',
                 color: v > 0.5 ? '#fff' : 'var(--muted)',
                 animation: `chipIn .2s ${i * 0.05}s ease both`,
               }}>
@@ -393,7 +402,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Playground: the three core demos, unwrapped ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -411,6 +420,18 @@ export default function Session1Tokenizer() {
           <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640 }}>
             LLMs do not read whole words. They read <strong style={{ color: 'var(--text)' }}>tokens</strong>, which are chunks of text. Common words like &ldquo;the&rdquo; are one token. Rare words get split: &ldquo;unbelievable&rdquo; becomes &ldquo;un&rdquo; + &ldquo;believe&rdquo; + &ldquo;able&rdquo;.
           </p>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <CodeExample accent={AC} code={`// Byte Pair Encoding (BPE) — the actual tokenization algorithm:
+// 1. Start with individual characters as tokens
+// 2. Count all adjacent character pairs
+// 3. Merge the most frequent pair into a new token
+// 4. Repeat until desired vocabulary size (~50K-100K tokens)
+
+// "low" + "low" + "lower" → "l o w" + "l o w" + "l o w e r"
+// Most common pair: "lo" → merge → new token #427
+// Next: "ow" → merge → token #892
+// Result: "low" becomes 1 token (common), "lower" = "low" + "er" (2 tokens)`} />
+          </div>
 
           <div style={{
             background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 14,
@@ -484,7 +505,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Training ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <SubSection title="How Does It Learn?" accent={AC}>
           <p style={{ color: 'var(--muted)', fontSize: 'var(--font-body-lg)', lineHeight: 'var(--lh-relaxed)', maxWidth: 640, marginBottom: '1.5rem' }}>
             Imagine a student doing fill-in-the-blank questions for months, non-stop, learning from every mistake. That is LLM training.
@@ -608,7 +629,7 @@ export default function Session1Tokenizer() {
                       <span style={{
                         padding: '2px 10px', borderRadius: 100,
                         background: params >= 70 ? 'rgba(52,211,153,.15)' : 'rgba(251,146,60,.15)',
-                        color: params >= 70 ? '#34d399' : '#fb923c',
+                        color: params >= 70 ? '#047857' : '#c2410c',
                         fontFamily: 'var(--font-mono)', fontSize: 'var(--font-micro)',
                       }}>
                         {params >= 70 ? '🚀 Frontier' : params >= 7 ? '👍 Capable' : '🔰 Basic'}
@@ -663,7 +684,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Token Playground (session closer) ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           Try It Yourself
         </p>
@@ -715,7 +736,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Recap + Mental Model ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -738,7 +759,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="An LLM predicts the next word, one token at a time. It learned by practicing on billions of texts. After enough practice, it got so good that it seems intelligent, but it is really just filling in the blank, over and over. Tokens matter because they are what the model reads and what you pay for."
@@ -746,7 +767,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           'What is the single task an LLM does?',
           'Why does "Hyderabad" use more tokens than "Mumbai"?',
@@ -757,7 +778,7 @@ export default function Session1Tokenizer() {
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

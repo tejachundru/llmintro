@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const sessions = [
-  { num: '01', label: 'The Prediction Machine', sub: 'Tokens, next-word prediction, training', path: '/1', accent: '#4f9eff', icon: '🧠' },
-  { num: '02', label: 'The Attention Engine', sub: 'QKV, self-attention, transformers', path: '/2', accent: '#a78bfa', icon: '🔦' },
-  { num: '03', label: 'The Working Desk', sub: 'Context window, memory limits, cost', path: '/3', accent: '#34d399', icon: '🪟' },
-  { num: '04', label: 'The Open-Book Exam', sub: 'RAG, embeddings, vector databases', path: '/4', accent: '#fb923c', icon: '📎' },
-  { num: '05', label: 'The Art of the Ask', sub: 'Prompts, temperature, techniques', path: '/5', accent: '#f472b6', icon: '🎯' },
-  { num: '06', label: 'From Talk to Action', sub: 'MCP, tools, chaining actions', path: '/6', accent: '#63dcb4', icon: '🦾' },
+  { num: '01', label: 'The Prediction Machine', sub: 'Tokens, next-word prediction, training', path: '/1', accent: '#2563eb', icon: '🧠' },
+  { num: '02', label: 'The Attention Engine', sub: 'QKV, self-attention, transformers', path: '/2', accent: '#7c3aed', icon: '🔦' },
+  { num: '03', label: 'The Working Desk', sub: 'Context window, memory limits, cost', path: '/3', accent: '#047857', icon: '🪟' },
+  { num: '04', label: 'The Open-Book Exam', sub: 'RAG, embeddings, vector databases', path: '/4', accent: '#c2410c', icon: '📎' },
+  { num: '05', label: 'The Art of the Ask', sub: 'Prompts, temperature, techniques', path: '/5', accent: '#be185d', icon: '🎯' },
+  { num: '06', label: 'From Talk to Action', sub: 'MCP, tools, chaining actions', path: '/6', accent: '#0f766e', icon: '🦾' },
 ];
 
 export default function Home() {

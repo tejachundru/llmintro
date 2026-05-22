@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   RevealSection, SectionHeader, SubSection, WarningBox,
-  ConceptBlock, InfoBox,
+  ConceptBlock, InfoBox, CodeExample,
   RecapBox, PracticeQuestions, QuickSummary, MentalModel, BeforeAfter,
   StepBuilder, AnimatedPipeline,
 } from './shared';
@@ -56,11 +56,11 @@ function drawAttention(canvas: HTMLCanvasElement, fromIdx: number) {
   SENTENCE.forEach((w, i) => {
     const x = colW * i + colW / 2;
     const weight = weights[i] || 0;
-    ctx.fillStyle = `rgba(255,255,255,${0.3 + weight * 2})`;
+    ctx.fillStyle = `rgba(255,25,25,${0.3 + weight * 2})`;
     ctx.font = weight > 0.2 ? '500 14px SF Mono, Fira Code, monospace' : '14px SF Mono, Fira Code, monospace';
     ctx.fillText(w, x, 175);
     if (weight > 0.05) {
-      ctx.fillStyle = `rgba(124,58,237,${weight * 3})`;
+      ctx.fillStyle = `rgba(124,58,237,${(weight + 2 )* 3})`;
       ctx.font = '12px SF Mono, Fira Code, monospace';
       ctx.fillText((weight * 100).toFixed(0) + '%', x, 195);
     }
@@ -200,25 +200,36 @@ function QKVDemo() {
           </div>
         </div>
 
-        <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.5rem' }}>
-          &ldquo;{word}&rdquo; attention scores (Q &times; K):
+        <div style={{ fontSize: 'var(--font-caption)', color: 'var(--muted)', fontFamily: 'var(--font-mono)', marginBottom: '.65rem' }}>
+          &ldquo;{word}&rdquo; attention scores = Q<sub>{word}</sub> &times; K<sub>word</sub> (dot product):
         </div>
-        <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', marginBottom: '.75rem' }}>
           {words.map((w) => {
             const score = dotWith(w);
+            const o = qkvData[w];
             const maxScore = Math.max(...words.map(dotWith));
+            const term0 = (d.q[0] * o.k[0]).toFixed(2);
+            const term1 = (d.q[1] * o.k[1]).toFixed(2);
             return (
               <div key={w} style={{
-                padding: '.4rem .65rem', borderRadius: 6, textAlign: 'center', flex: 1, minWidth: 60,
-                background: `rgba(124,58,237,${(score / maxScore) * 0.4})`,
-                border: `1px solid rgba(124,58,237,${(score / maxScore) * 0.6})`,
+                padding: '.5rem .65rem', borderRadius: 6, textAlign: 'center', flex: 1, minWidth: 80,
+                background: `rgba(124,58,237,${(score / maxScore) * 0.35})`,
+                border: `1px solid rgba(124,58,237,${(score / maxScore) * 0.55})`,
                 fontFamily: 'var(--font-mono)', fontSize: 'var(--font-caption)',
               }}>
-                <div style={{ color: 'var(--text)' }}>{w}</div>
-                <div style={{ color: score > 0.3 ? AC : 'var(--muted)', fontSize: 'var(--font-micro)' }}>{(score * 100).toFixed(0)}%</div>
+                <div style={{ color: 'var(--text)', fontWeight: 500 }}>{w}</div>
+                <div style={{ color: score > 0.3 ? AC : 'var(--muted)', fontSize: 'var(--font-micro)', marginTop: '.15rem' }}>
+                  = {d.q[0].toFixed(1)}&times;{o.k[0].toFixed(1)} + {d.q[1].toFixed(1)}&times;{o.k[1].toFixed(1)}
+                </div>
+                <div style={{ color: score > 0.3 ? AC : 'var(--muted)', fontSize: 'var(--font-micro)' }}>
+                  = {term0} + {term1} = <strong>{(score * 100).toFixed(0)}%</strong>
+                </div>
               </div>
             );
           })}
+        </div>
+        <div style={{ fontSize: 'var(--font-micro)', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+          Raw scores &rarr; softmax &rarr; attention weights (sum to 100%). These weights blend the Value vectors.
         </div>
       </div>
     </div>
@@ -298,9 +309,9 @@ function AttentionExplorer() {
                     padding: '.5rem .85rem', borderRadius: 8, cursor: 'pointer',
                     fontFamily: 'var(--font-mono)', fontSize: 'var(--font-body)',
                     border: '1px solid',
-                    background: isSelected ? AC + '1e' : isConnected ? 'rgba(52,211,153,.15)' : 'var(--bg3)',
-                    borderColor: isSelected ? AC + '66' : isConnected ? 'rgba(52,211,153,.4)' : 'var(--border)',
-                    color: isSelected ? AC : isConnected ? '#34d399' : 'var(--text)',
+                    background: isSelected ? AC + '1e' : isConnected ? 'rgba(4,120,87,.15)' : 'var(--bg3)',
+                    borderColor: isSelected ? AC + '66' : isConnected ? 'rgba(4,120,87,.4)' : 'var(--border)',
+                    color: isSelected ? AC : isConnected ? '#047857' : 'var(--text)',
                     transform: isSelected ? 'scale(1.1)' : isConnected ? 'scale(1.05)' : 'scale(1)',
                     transition: 'all .3s',
                     fontWeight: isSelected || isConnected ? 600 : 400,
@@ -318,7 +329,7 @@ function AttentionExplorer() {
                 )}
                 {isConnected && (
                   <span style={{
-                    marginTop: 4, fontSize: 'var(--font-micro)', color: '#34d399',
+                    marginTop: 4, fontSize: 'var(--font-micro)', color: '#047857',
                     fontFamily: 'var(--font-mono)',
                   }}>
                     ← connected
@@ -338,7 +349,7 @@ function AttentionExplorer() {
           }}>
             <strong style={{ color: AC }}>&ldquo;{words[selectedWord]}&rdquo;</strong> pays attention to:
             {linkMap[selectedWord].length > 0
-              ? <> <strong style={{ color: '#34d399' }}>{linkMap[selectedWord].map(i => `"${words[i]}"`).join(', ')}</strong></>
+              ? <> <strong style={{ color: '#047857' }}>{linkMap[selectedWord].map(i => `"${words[i]}"`).join(', ')}</strong></>
               : <span> no direct connections (in this simplified view)</span>
             }
           </div>
@@ -414,7 +425,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── Why This Matters ── */}
-      <RevealSection style={{ marginBottom: '2rem' }}>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <ConceptBlock title="Why should you care?" accent={AC}>
           Attention is the <strong style={{ color: 'var(--text)' }}>secret sauce</strong> behind every modern LLM. Before 2017, models couldn&apos;t handle long sentences. Attention changed everything. Understanding it helps you know why LLMs are so powerful — and where they still mess up.
         </ConceptBlock>
@@ -474,7 +485,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── Playground: interactive demos unwrapped ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--font-heading)', color: 'var(--text)', marginBottom: '.5rem', marginTop: 0 }}>
           The Playground
         </p>
@@ -509,6 +520,21 @@ export default function Session2Attention() {
             { label: 'Step 5: Blend Values using attention weights', detail: 'Each word\'s output is a weighted blend of all Value vectors. "cat" ends up carrying info from "sat" and "mat" too.' },
           ]} />
 
+          <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+            <CodeExample accent={AC} code={`// The full attention formula (one head):
+// score(q, k) = dot(Q, K) / sqrt(d_k)
+// weights = softmax(scores)
+// output = sum(weights × V)
+
+// Concrete: "cat" attends to each word:
+// Q_cat · K_The  = 0.9×0.8 + 0.3×0.1 = 0.75
+// Q_cat · K_cat  = 0.9×0.4 + 0.3×0.8 = 0.60
+// Q_cat · K_sat  = 0.9×0.3 + 0.3×0.6 = 0.45
+// Q_cat · K_mat  = 0.9×0.5 + 0.3×0.9 = 0.72
+
+// raw scores → softmax → weights that sum to 1.0
+// Then: output_cat = sum(weight_i × V_i) for all i`} />
+          </div>
           <InfoBox accent={AC}>
             <strong style={{ color: 'var(--text)' }}>The key insight:</strong> Every word gets a &ldquo;personalized blend&rdquo; of every other word&apos;s information.
             &ldquo;Cat&rdquo; knows it&apos;s connected to &ldquo;sat&rdquo; (the action) and &ldquo;mat&rdquo; (the location).
@@ -564,7 +590,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── Recap + Mental Model (side by side) ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 300px' }}>
             <RecapBox accent={AC} items={[
@@ -588,7 +614,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── Quick Summary ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <QuickSummary
           accent={AC}
           summary="Attention is how every word asks 'are you important to me?' and blends the answer into its own meaning. It runs in parallel for all words, uses multiple 'heads' for different relationship types, and adds position info so word order matters. This is the core innovation that made modern LLMs possible."
@@ -596,7 +622,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── Practice Questions ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <PracticeQuestions accent={AC} questions={[
           'What problem did transformers solve that RNNs had?',
           'In the library analogy, what do Query, Key, and Value represent?',
@@ -607,7 +633,7 @@ export default function Session2Attention() {
       </RevealSection>
 
       {/* ── What to Learn Next ── */}
-      <RevealSection>
+      <RevealSection style={{ marginBottom: '4rem' }}>
         <div style={{
           padding: '1.25rem', borderRadius: 12,
           background: 'var(--bg2)', border: '1px solid var(--border)', marginBottom: '1rem',

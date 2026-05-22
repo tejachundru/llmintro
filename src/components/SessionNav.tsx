@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 
 const SESSIONS = [
-  { id: 's1', num: '01', label: 'What is an LLM?', accent: '#4f9eff' },
-  { id: 's2', num: '02', label: 'Attention', accent: '#a78bfa' },
-  { id: 's3', num: '03', label: 'Context Window', accent: '#34d399' },
-  { id: 's4', num: '04', label: 'RAG', accent: '#fb923c' },
-  { id: 's5', num: '05', label: 'Prompting', accent: '#f472b6' },
-  { id: 's6', num: '06', label: 'MCP & Tools', accent: '#63dcb4' },
+  { id: 's1', num: '01', label: 'What is an LLM?', accent: '#2563eb' },
+  { id: 's2', num: '02', label: 'Attention', accent: '#7c3aed' },
+  { id: 's3', num: '03', label: 'Context Window', accent: '#047857' },
+  { id: 's4', num: '04', label: 'RAG', accent: '#c2410c' },
+  { id: 's5', num: '05', label: 'Prompting', accent: '#be185d' },
+  { id: 's6', num: '06', label: 'MCP & Tools', accent: '#0f766e' },
 ];
 
 /**
@@ -49,7 +49,7 @@ export default function SessionNav() {
         left: 0,
         right: 0,
         zIndex: 100,
-        background: 'rgba(10, 12, 15, 0.85)',
+        background: 'rgba(245, 246, 250, 0.92)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         borderTop: '1px solid var(--border)',
